@@ -1,7 +1,17 @@
+dependencies:
+  uce: 1.15.0
 devDependencies:
   vite: 2.0.5
 lockfileVersion: 5.2
 packages:
+  /@ungap/create-content/0.3.1:
+    dev: false
+    resolution:
+      integrity: sha512-SHzmtS3KHG+gzNhO/E0tFqs12vNC5H3YxpF8a8AeodB/iX3ZYcxzS8vgWXbDGmHy6bgl7m+f9+wDKBdqOVT5FA==
+  /async-tag/0.2.0:
+    dev: false
+    resolution:
+      integrity: sha512-hNstPiQvxVVJdkBjfBsNb3zDEM2IUY3Xp7qaadEnhaGXq1/OFdS+TuwjEJxnIvZRm7e13KrPW74fIeDra7P5vw==
   /colorette/1.2.2:
     dev: true
     resolution:
@@ -50,6 +60,10 @@ packages:
     dev: true
     resolution:
       integrity: sha512-GSmOT2EbHrINBf9SR7CDELwlJ8AENk3Qn7OikK4nFYAu3Ote2+JYNVvkpAEQm3/TLNEJFD/xZJjzyxg3KBWOzw==
+  /plain-tag/0.1.3:
+    dev: false
+    resolution:
+      integrity: sha512-yyVAOFKTAElc7KdLt2+UKGExNYwYb/Y/WE9i+1ezCQsJE8gbKSjewfpRqK2nQgZ4d4hhAAGgDCOcIZVilqE5UA==
   /postcss/8.2.8:
     dependencies:
       colorette: 1.2.2
@@ -60,6 +74,10 @@ packages:
       node: ^10 || ^12 || >=14
     resolution:
       integrity: sha512-1F0Xb2T21xET7oQV9eKuctbM9S7BC0fetoHCc4H13z0PT6haiRLP4T0ZY4XWh7iLP0usgqykT6p9B2RtOf4FPw==
+  /reactive-props/0.2.2:
+    dev: false
+    resolution:
+      integrity: sha512-n+SrgOCufapXcef1ulKe4FNWq+Mn/fUTISwPfHYd4lL+Tc3kkeb0VfKF5UIZ6XYjgCjeCDnI5WkgzW11nlzEGg==
   /resolve/1.20.0:
     dependencies:
       is-core-module: 2.2.0
@@ -82,6 +100,56 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==
+  /uarray/1.0.0:
+    dev: false
+    resolution:
+      integrity: sha512-LHmiAd5QuAv7pU2vbh+Zq9YOnqVK0H764p2Ozinpfy9ka58OID4IsGLiXsitqH7n0NAIDxvax1A/kDXpii/Ckg==
+  /uce/1.15.0:
+    dependencies:
+      plain-tag: 0.1.3
+      reactive-props: 0.2.2
+      uhtml: 2.6.0
+      umap: 1.0.2
+    dev: false
+    resolution:
+      integrity: sha512-vK3bSX7Vh3GToJK1MD7HErT51N/RA2Sfcexf085Pzq4gd6II/Q/rLdQ1GcwAJ5qJKUAmlSuYZBsTmD2u6wF4og==
+  /udomdiff/1.1.0:
+    dev: false
+    resolution:
+      integrity: sha512-aqjTs5x/wsShZBkVagdafJkP8S3UMGhkHKszsu1cszjjZ7iOp86+Qb3QOFYh01oWjPMy5ZTuxD6hw5uTKxd+VA==
+  /uhandlers/0.5.0:
+    dependencies:
+      uarray: 1.0.0
+    dev: false
+    resolution:
+      integrity: sha512-k62zN6xdC97MbVUCtGyq5Pm+vYwf4vJ5z/KNo4bCEclZzsyi5T5pFrJxHVYqdht+3diCyK7KveUsJPXFJajYfQ==
+  /uhtml/2.6.0:
+    dependencies:
+      '@ungap/create-content': 0.3.1
+      async-tag: 0.2.0
+      uarray: 1.0.0
+      udomdiff: 1.1.0
+      uhandlers: 0.5.0
+      umap: 1.0.2
+      uparser: 0.2.1
+      uwire: 1.1.0
+    dev: false
+    resolution:
+      integrity: sha512-WFCyNzdwzl8+azAU9cblG8fc+VCbvFqIftYY6YQo2x1kVqm8HT3jk/T8K/YyfC1uP8o0RavqNCJvO621z8wj3A==
+  /umap/1.0.2:
+    dev: false
+    resolution:
+      integrity: sha512-bW127HgG4H4VAD6qlqO5vCC+7bnlYvZ6A6BdwyGblkWvlEG7VYpj1bcpf3iJpvyKmkPZWDIeZDmoULz67ec7NA==
+  /uparser/0.2.1:
+    dev: false
+    resolution:
+      integrity: sha512-hTwK8e+bAaER8gJBOysoFGjRPsX/xOthSPR/ieI9EgTf1rts9ey25tbDXIU0rDr/cGcLsvkCo1n8J/eccfAvvw==
+  /uwire/1.1.0:
+    dependencies:
+      uarray: 1.0.0
+    dev: false
+    resolution:
+      integrity: sha512-XJPmJnySabt8D0/wnfFFywgUOBnXszDEW32nEVIfOx1n6gLTZSp+X+70+blSnHKNiIUVSFPmmRuxOal0I/aB5g==
   /vite/2.0.5:
     dependencies:
       esbuild: 0.8.57
@@ -97,4 +165,5 @@ packages:
     resolution:
       integrity: sha512-QTgEDbq1WsTtr6j+++ewjhBFEk6c8v0xz4fb/OWJQKNYU8ZZtphOshwOqAlnarSstPBtWCBR0tsugXx6ajfoUg==
 specifiers:
+  uce: ^1.15.0
   vite: ^2.0.5
