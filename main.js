@@ -18,38 +18,31 @@ function define(tagName, obj, options = {}) {
     }
 
     connectedCallback() {
-      // FOO
-      debugger;
+      console.log("StampElement connectedCallback", this);
     }
 
     testBlah() {
-      debugger;
+      console.log("StampElement testBlah");
     }
   }
   Object.defineProperty(StampElement.prototype, "shadowDOM", {
     value: true,
     writable: true,
     enumerable: false,
-    // configurable: true,
   });
 
   Object.entries(obj).forEach(([key, value]) => {
+    // If property is a lifecycleMethod, then call the original function and our new function. Behaves like `super.myMethod()`.
     if (typeof value === typeof Function && lifecycleMethods[value.name]) {
       const originalFn = StampElement.prototype[key];
       StampElement.prototype[key] = function (args) {
-        debugger;
-        originalFn(args);
-        value(args);
+        originalFn.call(this, args);
+        value.call(this, args);
       };
       return;
     }
 
-    // if (key === "shadowDOM") {
-    //   debugger;
-    //   if (value) StampElement.prototype[key] = value;
-    //   return;
-    // }
-
+    // Overwrite existing property.
     StampElement.prototype[key] = value;
   });
 
@@ -62,7 +55,7 @@ const Foo = {
   // shadowDOM: false,
   connectedCallback() {
     //   // super.connectedCallback();
-    debugger;
+    console.log("FOO connectedCallback", this);
   },
   blah() {
     debugger;
