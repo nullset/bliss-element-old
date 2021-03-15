@@ -18,7 +18,9 @@ function define(tagName, obj, options = {}) {
     }
 
     connectedCallback() {
+      super.connectedCallback();
       console.log("StampElement connectedCallback", this);
+      console.log("shadowRoot", this.shadowRoot);
     }
 
     testBlah() {
@@ -62,7 +64,7 @@ const Foo = {
   },
   testBlah() {
     debugger;
-    console.log("succcess");
+    console.log("testblah", this);
   },
 };
 define("foo-tag", Foo);
