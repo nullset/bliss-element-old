@@ -2,7 +2,7 @@
   "name": "wc",
   "version": "0.0.0",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --port 5003",
     "build": "vite build",
     "serve": "vite preview"
   },
@@ -10,6 +10,10 @@
     "vite": "^2.0.5"
   },
   "dependencies": {
-    "uce": "^1.15.0"
+    "@nx-js/observer-util": "^4.2.2",
+    "@risingstack/react-easy-state": "^6.3.0",
+    "haunted": "^4.7.1",
+    "uce": "^1.15.0",
+    "uhtml": "^2.6.0"
   }
 }
