@@ -13,7 +13,7 @@ function define(tagName, componentObj, options = {}) {
   const { mixins = [], base = HTMLElement, extend = undefined } = options;
   const prototypeChain = Array.isArray(mixins) ? mixins : [mixins];
   prototypeChain.push(componentObj);
-  class StampElement extends base {
+  class DMMTElement extends base {
     static get observedAttributes() {
       return [
         /* array of attribute names to monitor for changes */
@@ -29,6 +29,7 @@ function define(tagName, componentObj, options = {}) {
         bool: Boolean,
         arr: Array,
         obj: Object,
+        fooBar: String,
       };
       this.state = this.props = observable(props(this, obsAttr));
 
@@ -37,7 +38,7 @@ function define(tagName, componentObj, options = {}) {
         // debugger;
       });
 
-      const rootNode = StampElement.prototype.shadowDOM
+      const rootNode = DMMTElement.prototype.shadowDOM
         ? this.attachShadow({ mode: "open" })
         : this.renderRoot || this;
 
@@ -48,13 +49,13 @@ function define(tagName, componentObj, options = {}) {
 
     connectedCallback() {
       if (super.connectedCallback) super.connectedCallback();
-      console.log("StampElement connectedCallback", this);
+      console.log("DMMTElement connectedCallback", this);
       console.log("shadowRoot", this.shadowRoot);
     }
 
     disconnectedCallback() {
       if (super.disconnectedCallback) super.disconnectedCallback();
-      console.log("StampElement disconnectedCallback", this);
+      console.log("DMMTElement disconnectedCallback", this);
     }
 
     adoptedCallback() {
@@ -70,10 +71,10 @@ function define(tagName, componentObj, options = {}) {
     }
 
     testBlah() {
-      console.log("StampElement testBlah");
+      console.log("DMMTElement testBlah");
     }
   }
-  Object.defineProperty(StampElement.prototype, "shadowDOM", {
+  Object.defineProperty(DMMTElement.prototype, "shadowDOM", {
     value: true,
     writable: true,
     enumerable: false,
@@ -83,8 +84,8 @@ function define(tagName, componentObj, options = {}) {
     Object.entries(p).forEach(([key, value]) => {
       // If property is a lifecycleMethod, then call the original function and our new function. Behaves like `super.myMethod()`.
       if (typeof value === typeof Function && lifecycleMethods[value.name]) {
-        const originalFn = StampElement.prototype[key];
-        StampElement.prototype[key] = function (args) {
+        const originalFn = DMMTElement.prototype[key];
+        DMMTElement.prototype[key] = function (args) {
           originalFn.call(this, args);
           value.call(this, args);
         };
@@ -92,11 +93,11 @@ function define(tagName, componentObj, options = {}) {
       }
 
       // If not a lifecycleMethod then overwrite existing property.
-      StampElement.prototype[key] = value;
+      DMMTElement.prototype[key] = value;
     });
   });
 
-  customElements.define(tagName, StampElement, { extends: extend });
+  customElements.define(tagName, DMMTElement, { extends: extend });
 }
 
 const Foo = {
