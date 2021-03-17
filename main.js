@@ -27,7 +27,7 @@ function define(tagName, componentObj, options = {}) {
       ];
     }
 
-    shadowDOM = true;
+    shadowDOM = 1;
 
     constructor() {
       super();
@@ -41,8 +41,9 @@ function define(tagName, componentObj, options = {}) {
         fooBar: String,
       };
       // this.state = this.props = observable(props(this, obsAttr));
-      this.state = observable({});
+      this.state = observable({ foo: 123 });
       this.internalState = observable({ shadowDOM: this.shadowDOM });
+      delete this.shadowDOM;
       // this.props = props(this, obsAttr);
       // this.props = props(this, {
       //   n: Number,
@@ -71,13 +72,59 @@ function define(tagName, componentObj, options = {}) {
       //   : this.renderRoot || this;
 
       observe(() => {
-        this.rootNode = this.internalState.shadowDOM
-          ? this.shadowRoot
+        if (this.internalState.shadowDOM === 1) {
+          this.rootNode = this.shadowRoot
             ? this.shadowRoot
-            : this.attachShadow({ mode: "open" })
-          : this.renderRoot || this;
-        console.log("ROOT NODE", this.rootNode);
-        render(this.rootNode, this.render());
+            : this.attachShadow({ mode: "open" });
+          render(this.rootNode, this.render());
+        } else if (this.internalState.shadowDOM === 0) {
+          this.rootNode = this.renderRoot || this;
+          render(this.rootNode, this.render());
+        } else if (this.internalState.shadowDOM === -1) {
+          const slots = this.shadowRoot.querySelectorAll("slot");
+          const slotTempMap = new Map();
+          slots.forEach((slot) => {
+            slotTempMap.set(slot.name, slot.assignedNodes());
+          });
+          this.rootNode = this.renderRoot || this;
+          render(this.rootNode, this.render());
+
+          const rootSlots = this.rootNode.querySelectorAll("slot");
+          rootSlots.forEach((slot) => {
+            const contents = slotTempMap.get(slot.name);
+            if (contents) {
+              const frag = new DocumentFragment();
+              contents.forEach((content) => {
+                frag.appendChild(content);
+              });
+              // slot.insertAdjacentElement("afterend", frag);
+              slot.appendChild(frag);
+            }
+          });
+
+          // --- GET STYLES --- //
+
+          this.rootNode = this.shadowRoot
+            ? this.shadowRoot
+            : this.attachShadow({ mode: "open" });
+          render(this.rootNode, this.render());
+          this.childNodes.forEach((node) => {
+            this.removeChild(node);
+          });
+          rootSlots.forEach((slot) => {
+            const contents = slotTempMap.get(slot.name);
+            if (contents) {
+              const frag = new DocumentFragment();
+              contents.forEach((content) => {
+                frag.appendChild(content);
+              });
+              this.appendChild(frag);
+            }
+          });
+          this.internalState.shadowDOM = 1;
+        }
+
+        // render(this.rootNode, this.render());
       });
     }
 
@@ -154,7 +201,8 @@ const Foo = {
     return html`<h1>
       Hello 👋 µhtml : ${this.state.foo} : ${this.state.xxx}
       <slot></slot>
-    </h1>`;
+      <slot name="baz"></slot>
+    </h1> `;
   },
 };
 
