@@ -1,5 +1,6 @@
 import { observable, observe } from "@nx-js/observer-util";
 import { render, html, svg } from "uhtml";
+import props from "element-props";
 
 const lifecycleMethods = {
   connectedCallback: true,
@@ -13,10 +14,28 @@ function define(tagName, componentObj, options = {}) {
   const prototypeChain = Array.isArray(mixins) ? mixins : [mixins];
   prototypeChain.push(componentObj);
   class StampElement extends type {
+    static get observedAttributes() {
+      return [
+        /* array of attribute names to monitor for changes */
+      ];
+    }
+
     constructor() {
       super();
 
-      this.state = observable({});
+      const obsAttr = {
+        foo: String,
+        num: Number,
+        bool: Boolean,
+        arr: Array,
+        obj: Object,
+      };
+      this.state = observable(props(this, obsAttr));
+
+      observe(() => {
+        console.log("THe state of foo:", this.state.foo);
+        // debugger;
+      });
 
       const rootNode = StampElement.prototype.shadowDOM
         ? this.attachShadow({ mode: "open" })
@@ -72,13 +91,11 @@ function define(tagName, componentObj, options = {}) {
         return;
       }
 
-      // Overwrite existing property.
+      // If not a lifecycleMethod then overwrite existing property.
       StampElement.prototype[key] = value;
     });
   });
 
-  // const ElemClass = Object.assign(FooElement.prototype, obj);
-  // debugger;
   customElements.define(tagName, StampElement, { extends: extend });
 }
 
@@ -97,7 +114,9 @@ const Foo = {
     debugger;
   },
   render() {
-    return html`<h1>Hello 👋 µhtml : ${this.state.foo}</h1>`;
+    return html`<h1>
+      Hello 👋 µhtml : ${this.state.foo} : ${this.state.xxx}
+    </h1>`;
   },
 };
 

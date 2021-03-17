@@ -1,6 +1,6 @@
 dependencies:
   '@nx-js/observer-util': 4.2.2
-  '@risingstack/react-easy-state': 6.3.0
+  element-props: 1.4.0
   haunted: 4.7.1
   uce: 1.15.0
   uhtml: 2.6.0
@@ -14,16 +14,6 @@ packages:
       node: '>=6.5.0'
     resolution:
       integrity: sha512-9OayX1xkdGjdnsDiO2YdaYJ6aMyCF7/NY4QWVgIgjSAZJ4OX2fD766Ts79hEzBscenQy2DCaSoY8VkguIMB1ZA==
-  /@risingstack/react-easy-state/6.3.0:
-    dependencies:
-      '@nx-js/observer-util': 4.2.2
-    dev: false
-    engines:
-      node: '>=6.0.0'
-    peerDependencies:
-      react: '*'
-    resolution:
-      integrity: sha512-AGLrzvwloZL7dgagwRkxJaq7bcDsOGdHrCpHZIlMIxcFLdFr5IpD2/kcmTlC34H682pvfIl1lzNxBw72la10aA==
   /@ungap/create-content/0.3.1:
     dev: false
     resolution:
@@ -36,6 +26,10 @@ packages:
     dev: true
     resolution:
       integrity: sha512-MKGMzyfeuutC/ZJ1cba9NqcNpfeqMUcYmyF1ZFY6/Cn7CNSAKx6a+s48sqLqyAiZuaP2TcqMhoo+dlwFnVxT9w==
+  /element-props/1.4.0:
+    dev: false
+    resolution:
+      integrity: sha512-JKDjKtFQP484/JOc/zIz8yujOr102loDKNohLXNlggWAFAwU+ZbYug7P1tN7UWIjiER17h9/Nzl83LRkXTksvA==
   /esbuild/0.8.57:
     dev: true
     hasBin: true
@@ -196,7 +190,7 @@ packages:
       integrity: sha512-QTgEDbq1WsTtr6j+++ewjhBFEk6c8v0xz4fb/OWJQKNYU8ZZtphOshwOqAlnarSstPBtWCBR0tsugXx6ajfoUg==
 specifiers:
   '@nx-js/observer-util': ^4.2.2
-  '@risingstack/react-easy-state': ^6.3.0
+  element-props: ^1.4.0
   haunted: ^4.7.1
   uce: ^1.15.0
   uhtml: ^2.6.0
