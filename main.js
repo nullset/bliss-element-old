@@ -1,4 +1,5 @@
 import { observable, observe } from "@nx-js/observer-util";
+import { render, html, svg } from "uhtml";
 
 const lifecycleMethods = {
   connectedCallback: true,
@@ -17,9 +18,13 @@ function define(tagName, componentObj, options = {}) {
 
       this.state = observable({});
 
-      if (StampElement.prototype.shadowDOM) {
-        this.attachShadow({ mode: "open" });
-      }
+      const rootNode = StampElement.prototype.shadowDOM
+        ? this.attachShadow({ mode: "open" })
+        : this.renderRoot || this;
+
+      observe(() => {
+        render(rootNode, this.render());
+      });
     }
 
     connectedCallback() {
@@ -41,6 +46,10 @@ function define(tagName, componentObj, options = {}) {
       if (super.attributeChangedCallback) super.attributeChangedCallback();
     }
 
+    render() {
+      return html``;
+    }
+
     testBlah() {
       console.log("StampElement testBlah");
     }
@@ -50,8 +59,6 @@ function define(tagName, componentObj, options = {}) {
     writable: true,
     enumerable: false,
   });
-
-  debugger;
 
   prototypeChain.forEach((p) => {
     Object.entries(p).forEach(([key, value]) => {
@@ -76,7 +83,6 @@ function define(tagName, componentObj, options = {}) {
 }
 
 const Foo = {
-  name: "Foo",
   observedAttributes: [],
   // shadowDOM: false,
   connectedCallback() {
@@ -90,10 +96,12 @@ const Foo = {
     console.log("FOO.testBlah", this);
     debugger;
   },
+  render() {
+    return html`<h1>Hello 👋 µhtml : ${this.state.foo}</h1>`;
+  },
 };
 
 const Bar = {
-  name: "Bar",
   observedAttributes: [],
   // shadowDOM: false,
   connectedCallback() {
