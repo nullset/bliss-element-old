@@ -38,9 +38,10 @@ function define(tagName, componentObj, options = {}) {
         // debugger;
       });
 
-      const rootNode = DMMTElement.prototype.shadowDOM
-        ? this.attachShadow({ mode: "open" })
-        : this.renderRoot || this;
+      const rootNode =
+        this.hasShadowRoot === false
+          ? this
+          : this.attachShadow({ mode: "open" });
 
       observe(() => {
         render(rootNode, this.render());
@@ -102,7 +103,7 @@ function define(tagName, componentObj, options = {}) {
 
 const Foo = {
   observedAttributes: [],
-  // shadowDOM: false,
+  // hasShadowRoot: true,
   connectedCallback() {
     //   // super.connectedCallback();
     console.log("FOO connectedCallback", this);
@@ -116,7 +117,7 @@ const Foo = {
   },
   render() {
     return html`<h1>
-      Hello 👋 µhtml : ${this.state.foo} : ${this.state.xxx}
+      Hello 👋 <slot>µhtml</slot> : ${this.state.foo} : ${this.state.xxx}
     </h1>`;
   },
 };
