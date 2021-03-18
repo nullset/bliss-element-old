@@ -43,7 +43,10 @@ function define(tagName, componentObj, options = {}) {
   const { mixins = [], base = HTMLElement, extend = undefined } = options;
   const prototypeChain = Array.isArray(mixins) ? mixins : [mixins];
   prototypeChain.push(componentObj);
-  const flattenedPrototype = Object.assign(...prototypeChain);
+  const flattenedPrototype = Object.assign(
+    Object.create(null),
+    ...prototypeChain
+  );
   const preBoundEvents = Object.keys(flattenedPrototype).reduce((acc, key) => {
     if (isAnEvent(key)) acc.push(key.replace(eventRegex, "$1"));
     return acc;
