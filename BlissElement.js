@@ -1,6 +1,31 @@
 import { observable, observe } from "@nx-js/observer-util";
 import { render, html, svg } from "uhtml";
 import props from "element-props";
+import "construct-style-sheets-polyfill";
+
+function css(string) {
+  return string;
+}
+
+function constructStylesheets(prototypes) {
+  return prototypes
+    .slice(0)
+    .reduce((acc, { styles }) => {
+      if (!styles) return acc;
+      const rules = (Array.isArray(styles) ? styles : [styles])
+        .map((s) => {
+          return s.toString();
+        })
+        .join("");
+
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync(rules);
+
+      acc.push(sheet);
+      return acc;
+    }, [])
+    .flat(Infinity);
+}
 
 const lifecycleMethods = {
   connectedCallback: true,
@@ -13,6 +38,9 @@ function define(tagName, componentObj, options = {}) {
   const { mixins = [], base = HTMLElement, extend = undefined } = options;
   const prototypeChain = Array.isArray(mixins) ? mixins : [mixins];
   prototypeChain.push(componentObj);
+
+  const componentStylesheets = constructStylesheets(prototypeChain);
+
   class BlissElement extends base {
     static get observedAttributes() {
       return [
@@ -35,13 +63,18 @@ function define(tagName, componentObj, options = {}) {
 
       observe(() => {
         console.log("THe state of foo:", this.state.foo);
-        // debugger;
       });
 
-      const rootNode =
-        this.hasShadowRoot === false
-          ? this
-          : this.attachShadow({ mode: "open" });
+      let rootNode;
+      if (this.hasShadowRoot == null) {
+        rootNode = this.attachShadow({ mode: "open" });
+        rootNode.adoptedStyleSheets = componentStylesheets;
+      } else {
+        rootNode = this;
+      }
+      // this.hasShadowRoot === false
+      //   ? this
+      //   : this.attachShadow({ mode: "open" });
 
       observe(() => {
         render(rootNode, this.render());
@@ -89,4 +122,4 @@ function define(tagName, componentObj, options = {}) {
   customElements.define(tagName, BlissElement, { extends: extend });
 }
 
-export { define, html, svg, observable, observe };
+export { define, html, svg, css, observable, observe };
