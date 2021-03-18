@@ -50,13 +50,10 @@ function define(tagName, componentObj, options = {}) {
 
     connectedCallback() {
       if (super.connectedCallback) super.connectedCallback();
-      console.log("DMMTElement connectedCallback", this);
-      console.log("shadowRoot", this.shadowRoot);
     }
 
     disconnectedCallback() {
       if (super.disconnectedCallback) super.disconnectedCallback();
-      console.log("DMMTElement disconnectedCallback", this);
     }
 
     adoptedCallback() {
@@ -70,16 +67,7 @@ function define(tagName, componentObj, options = {}) {
     render() {
       return html``;
     }
-
-    testBlah() {
-      console.log("DMMTElement testBlah");
-    }
   }
-  Object.defineProperty(DMMTElement.prototype, "shadowDOM", {
-    value: true,
-    writable: true,
-    enumerable: false,
-  });
 
   prototypeChain.forEach((p) => {
     Object.entries(p).forEach(([key, value]) => {
@@ -124,7 +112,6 @@ const Foo = {
 
 const Bar = {
   observedAttributes: [],
-  // shadowDOM: false,
   connectedCallback() {
     //   // super.connectedCallback();
     console.log("BAR connectedCallback", this);
