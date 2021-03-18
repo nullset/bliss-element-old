@@ -34,10 +34,20 @@ const lifecycleMethods = {
   attributeChangedCallback: true,
 };
 
+const eventRegex = new RegExp("^on([a-z])");
+function isAnEvent(name) {
+  return eventRegex.test(name);
+}
+
 function define(tagName, componentObj, options = {}) {
   const { mixins = [], base = HTMLElement, extend = undefined } = options;
   const prototypeChain = Array.isArray(mixins) ? mixins : [mixins];
   prototypeChain.push(componentObj);
+  const flattenedPrototype = Object.assign(...prototypeChain);
+  const preBoundEvents = Object.keys(flattenedPrototype).reduce((acc, key) => {
+    if (isAnEvent(key)) acc.push(key.replace(eventRegex, "$1"));
+    return acc;
+  }, []);
 
   const componentStylesheets = constructStylesheets(prototypeChain);
 
@@ -48,8 +58,16 @@ function define(tagName, componentObj, options = {}) {
       ];
     }
 
+    handleEvent(e) {
+      this["on" + e.type](e);
+    }
+
     constructor() {
       super();
+
+      preBoundEvents.forEach((event) => {
+        this.addEventListener(event, this);
+      });
 
       const obsAttr = {
         foo: String,
@@ -72,9 +90,6 @@ function define(tagName, componentObj, options = {}) {
       } else {
         rootNode = this;
       }
-      // this.hasShadowRoot === false
-      //   ? this
-      //   : this.attachShadow({ mode: "open" });
 
       observe(() => {
         render(rootNode, this.render());
@@ -102,19 +117,33 @@ function define(tagName, componentObj, options = {}) {
     }
   }
 
-  prototypeChain.forEach((p) => {
-    Object.entries(p).forEach(([key, value]) => {
-      // If property is a lifecycleMethod, then call the original function and our new function. Behaves like `super.myMethod()`.
-      if (typeof value === typeof Function && lifecycleMethods[value.name]) {
-        const originalFn = BlissElement.prototype[key];
-        BlissElement.prototype[key] = function (args) {
-          originalFn.call(this, args);
-          value.call(this, args);
-        };
+  prototypeChain.forEach((proto) => {
+    Object.entries(proto).forEach(([key, value]) => {
+      if (typeof value === typeof Function) {
+        if (lifecycleMethods[value.name]) {
+          // If property is a lifecycleMethod, then call the original function and our new function. Behaves like `super.myMethod()`.
+          const originalFn = BlissElement.prototype[key];
+          BlissElement.prototype[key] = function (args) {
+            originalFn.call(this, args);
+            value.call(this, args);
+          };
+        } else {
+          if (isAnEvent(key)) {
+            // Events are handled in a special way on HTMLElement. This is because HTMLElement is a function, not an object.
+            Object.defineProperty(BlissElement.prototype, key, {
+              value: value,
+              enumerable: true,
+              configurable: true,
+            });
+          } else {
+            BlissElement.prototype[key] = value;
+          }
+        }
         return;
       }
 
       // If not a lifecycleMethod then overwrite existing property.
+
       BlissElement.prototype[key] = value;
     });
   });

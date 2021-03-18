@@ -14,7 +14,9 @@ const Foo = {
       }
     `,
   ],
-
+  onclick(e) {
+    debugger;
+  },
   // hasShadowRoot: true,
   connectedCallback() {
     //   // super.connectedCallback();
