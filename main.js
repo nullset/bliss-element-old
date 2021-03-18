@@ -13,7 +13,7 @@ function define(tagName, componentObj, options = {}) {
   const { mixins = [], base = HTMLElement, extend = undefined } = options;
   const prototypeChain = Array.isArray(mixins) ? mixins : [mixins];
   prototypeChain.push(componentObj);
-  class DMMTElement extends base {
+  class BlissElement extends base {
     static get observedAttributes() {
       return [
         /* array of attribute names to monitor for changes */
@@ -73,8 +73,8 @@ function define(tagName, componentObj, options = {}) {
     Object.entries(p).forEach(([key, value]) => {
       // If property is a lifecycleMethod, then call the original function and our new function. Behaves like `super.myMethod()`.
       if (typeof value === typeof Function && lifecycleMethods[value.name]) {
-        const originalFn = DMMTElement.prototype[key];
-        DMMTElement.prototype[key] = function (args) {
+        const originalFn = BlissElement.prototype[key];
+        BlissElement.prototype[key] = function (args) {
           originalFn.call(this, args);
           value.call(this, args);
         };
@@ -82,11 +82,11 @@ function define(tagName, componentObj, options = {}) {
       }
 
       // If not a lifecycleMethod then overwrite existing property.
-      DMMTElement.prototype[key] = value;
+      BlissElement.prototype[key] = value;
     });
   });
 
-  customElements.define(tagName, DMMTElement, { extends: extend });
+  customElements.define(tagName, BlissElement, { extends: extend });
 }
 
 const Foo = {
