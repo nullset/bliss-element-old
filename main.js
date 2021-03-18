@@ -2,6 +2,8 @@ import { observable, observe, raw } from "@nx-js/observer-util";
 import { render, html, svg } from "uhtml";
 import props from "element-props";
 
+import "construct-style-sheets-polyfill";
+
 const lifecycleMethods = {
   connectedCallback: true,
   disconnectedCallback: true,
@@ -9,10 +11,36 @@ const lifecycleMethods = {
   attributeChangedCallback: true,
 };
 
+function css(string) {
+  return string;
+}
+
+function constructStylesheets(prototypes) {
+  return prototypes
+    .slice(0)
+    .reduce((acc, { styles }) => {
+      if (!styles) return acc;
+      const rules = (Array.isArray(styles) ? styles : [styles])
+        .map((s) => {
+          return s.toString();
+        })
+        .join("");
+
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync(rules);
+
+      acc.push(sheet);
+      return acc;
+    }, [])
+    .flat(Infinity);
+}
+
 function define(tagName, componentObj, options = {}) {
   const { mixins = [], base = HTMLElement, extend = undefined } = options;
   const prototypeChain = Array.isArray(mixins) ? mixins : [mixins];
   prototypeChain.push(componentObj);
+
+  const componentStylesheets = constructStylesheets(prototypeChain);
 
   class DMMTElement extends base {
     static get attrs() {
@@ -27,7 +55,7 @@ function define(tagName, componentObj, options = {}) {
       ];
     }
 
-    shadowDOM = 1;
+    shadowDOM = true;
 
     constructor() {
       super();
@@ -42,6 +70,7 @@ function define(tagName, componentObj, options = {}) {
       };
       // this.state = this.props = observable(props(this, obsAttr));
       this.state = observable({ foo: 123 });
+
       this.internalState = observable({ shadowDOM: this.shadowDOM });
       delete this.shadowDOM;
       // this.props = props(this, obsAttr);
@@ -72,15 +101,18 @@ function define(tagName, componentObj, options = {}) {
       //   : this.renderRoot || this;
 
       observe(() => {
-        if (this.internalState.shadowDOM === 1) {
+        if (this.internalState.shadowDOM === true) {
           this.rootNode = this.shadowRoot
             ? this.shadowRoot
             : this.attachShadow({ mode: "open" });
+
+          this.rootNode.adoptedStyleSheets = componentStylesheets;
+
           render(this.rootNode, this.render());
-        } else if (this.internalState.shadowDOM === 0) {
+        } else if (this.internalState.shadowDOM === false) {
           this.rootNode = this.renderRoot || this;
           render(this.rootNode, this.render());
-        } else if (this.internalState.shadowDOM === -1) {
+        } else {
           const slots = this.shadowRoot.querySelectorAll("slot");
           const slotTempMap = new Map();
           slots.forEach((slot) => {
@@ -184,6 +216,18 @@ function define(tagName, componentObj, options = {}) {
 }
 
 const Foo = {
+  styles: [
+    css`
+      h1 {
+        color: lime;
+      }
+    `,
+    css`
+      body {
+        background: orange;
+      }
+    `,
+  ],
   observedAttributes: [],
   // shadowDOM: false,
   connectedCallback() {
@@ -208,6 +252,12 @@ const Foo = {
 
 const Bar = {
   observedAttributes: [],
+  styles: css`
+    h1 {
+      font-weight: 100;
+      color: red;
+    }
+  `,
   // shadowDOM: false,
   connectedCallback() {
     //   // super.connectedCallback();
