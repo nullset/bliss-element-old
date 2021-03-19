@@ -161,6 +161,18 @@ function define(tagName, componentObj, options = {}) {
       return ctxTree.relatives(this);
     }
 
+    getCtx(node) {
+      return ctxTree.get(node);
+    }
+
+    ctxRemove(node) {
+      return ctxTree.remove(node);
+    }
+
+    get ctxTree() {
+      return ctxTree;
+    }
+
     buildCtxAncestors() {
       let node = this;
       let ctxArr = [node];
@@ -175,14 +187,6 @@ function define(tagName, componentObj, options = {}) {
       ctxTree.set(c, path);
     }
 
-    getCtx(node) {
-      return ctxTree.get(node);
-    }
-
-    get ctxTree() {
-      return ctxTree;
-    }
-
     connectedCallback() {
       if (super.connectedCallback) super.connectedCallback();
       console.log("BLISS connectedCallback", this);
@@ -194,9 +198,7 @@ function define(tagName, componentObj, options = {}) {
     disconnectedCallback() {
       if (super.disconnectedCallback) super.disconnectedCallback();
 
-      this.ctxAncestors.forEach((value, idx, arr) => {
-        debugger;
-      });
+      return ctxTree.delete(this);
     }
 
     adoptedCallback() {
