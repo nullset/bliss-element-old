@@ -39,6 +39,47 @@ function isAnEvent(name) {
   return eventRegex.test(name);
 }
 
+const ctxTree = new Map();
+Object.defineProperties(ctxTree, {
+  parent: {
+    value: (node) => {
+      const nodeInfo = ctxTree.get(node);
+      return ctxTree.get(nodeInfo.path[nodeInfo.path.length - 2]);
+    },
+  },
+  ancestors: {
+    value: (node) => {
+      return ctxTree.get(node).slice(0, -1).reverse();
+    },
+  },
+
+  descendants: {
+    value: (node) => {
+      const path = ctxTree.get(node);
+      const length = path.length;
+      return Array.from(ctxTree.entries()).reduce(
+        (acc, [key, value], i, arr) => {
+          if (value.length <= length) return acc;
+          const ctxPathSlice = value.slice(0, length);
+          if (ctxPathSlice.every((ctx, idx, arr) => arr[idx] === path[idx])) {
+            acc.push(key);
+          }
+          return acc;
+        },
+        []
+      );
+    },
+  },
+
+  relatives: {
+    value: (node) => {
+      return [ctxTree.ancestors(node), ctxTree.descendants(node)].flat(
+        Infinity
+      );
+    },
+  },
+});
+
 function define(tagName, componentObj, options = {}) {
   const { mixins = [], base = HTMLElement, extend = undefined } = options;
   const prototypeChain = Array.isArray(mixins) ? mixins : [mixins];
@@ -61,6 +102,10 @@ function define(tagName, componentObj, options = {}) {
       ];
     }
 
+    get isBlissElement() {
+      return true;
+    }
+
     handleEvent(e) {
       this["on" + e.type](e);
     }
@@ -72,19 +117,9 @@ function define(tagName, componentObj, options = {}) {
         this.addEventListener(event, this);
       });
 
-      const obsAttr = {
-        foo: String,
-        num: Number,
-        bool: Boolean,
-        arr: Array,
-        obj: Object,
-        fooBar: String,
-      };
-      this.state = this.props = observable(props(this, obsAttr));
-
-      observe(() => {
-        console.log("THe state of foo:", this.state.foo);
-      });
+      // this.state = this.props = observable(props(this));
+      this.state = observable({});
+      this.internalState = observable({});
 
       let rootNode;
       if (this.hasShadowRoot == null) {
@@ -99,12 +134,69 @@ function define(tagName, componentObj, options = {}) {
       });
     }
 
+    watch(fn) {
+      observe(fn);
+    }
+
+    ctxParent(matcher) {
+      let node = this;
+      let ctx;
+      while (!ctx && node.parentElement) {
+        node = node.parentElement;
+        if (!node.isBlissElement) return;
+        if (node.matches(matcher)) ctx = node;
+      }
+      return node;
+    }
+
+    get ctxAncestors() {
+      return ctxTree.ancestors(this);
+    }
+
+    get ctxDescendants() {
+      return ctxTree.descendants(this);
+    }
+
+    get ctxRelatives() {
+      return ctxTree.relatives(this);
+    }
+
+    buildCtxAncestors() {
+      let node = this;
+      let ctxArr = [node];
+      console.log(node);
+      while (node.parentElement) {
+        node = node.parentElement;
+        if (node.isBlissElement) ctxArr.push(node);
+      }
+
+      const c = ctxArr[0];
+      const path = ctxArr.slice(0).reverse();
+      ctxTree.set(c, path);
+    }
+
+    getCtx(node) {
+      return ctxTree.get(node);
+    }
+
+    get ctxTree() {
+      return ctxTree;
+    }
+
     connectedCallback() {
       if (super.connectedCallback) super.connectedCallback();
+      console.log("BLISS connectedCallback", this);
+
+      // Must wait a ticx because child elements can be attached before their parents.
+      requestAnimationFrame(() => this.buildCtxAncestors());
     }
 
     disconnectedCallback() {
       if (super.disconnectedCallback) super.disconnectedCallback();
+
+      this.ctxAncestors.forEach((value, idx, arr) => {
+        debugger;
+      });
     }
 
     adoptedCallback() {
