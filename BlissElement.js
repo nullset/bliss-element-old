@@ -57,17 +57,18 @@ Object.defineProperties(ctxTree, {
     value: (node) => {
       const path = ctxTree.get(node);
       const length = path.length;
-      return Array.from(ctxTree.entries()).reduce(
-        (acc, [key, value], i, arr) => {
+      return Array.from(ctxTree.entries())
+        .reduce((acc, [key, value], i, arr) => {
           if (value.length <= length) return acc;
           const ctxPathSlice = value.slice(0, length);
           if (ctxPathSlice.every((ctx, idx, arr) => arr[idx] === path[idx])) {
             acc.push(key);
           }
           return acc;
-        },
-        []
-      );
+        }, [])
+        .sort((a, b) => {
+          return ctxTree.get(a).size < ctxTree.get(b).size;
+        });
     },
   },
 
