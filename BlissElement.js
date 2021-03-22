@@ -1,4 +1,4 @@
-import { observable, observe } from "@nx-js/observer-util";
+import { observable, observe, raw } from "@nx-js/observer-util";
 import { render, html, svg } from "uhtml";
 import props from "element-props";
 import "construct-style-sheets-polyfill";
@@ -40,46 +40,53 @@ function isAnEvent(name) {
 }
 
 const ctxTree = new Map();
-Object.defineProperties(ctxTree, {
-  parent: {
-    value: (node) => {
-      const nodeInfo = ctxTree.get(node);
-      return ctxTree.get(nodeInfo.path[nodeInfo.path.length - 2]);
-    },
-  },
-  ancestors: {
-    value: (node) => {
-      return ctxTree.get(node).slice(0, -1).reverse();
-    },
-  },
+// Object.defineProperties(ctxTree, {
+//   foo: {
+//     value: () => {
+//       return this;
+//     },
+//   },
+//   parent: {
+//     value: (node) => {
+//       const nodeInfo = ctxTree.get(node);
+//       return ctxTree.get(nodeInfo.path[nodeInfo.path.length - 2]);
+//     },
+//   },
+//   ancestors: {
+//     value: (node) => {
+//       console.log(this);
+//       debugger;
+//       return ctxTree.get(node).slice(0, -1).reverse();
+//     },
+//   },
 
-  descendants: {
-    value: (node) => {
-      const path = ctxTree.get(node);
-      const length = path.length;
-      return Array.from(ctxTree.entries())
-        .reduce((acc, [key, value], i, arr) => {
-          if (value.length <= length) return acc;
-          const ctxPathSlice = value.slice(0, length);
-          if (ctxPathSlice.every((ctx, idx, arr) => arr[idx] === path[idx])) {
-            acc.push(key);
-          }
-          return acc;
-        }, [])
-        .sort((a, b) => {
-          return ctxTree.get(a).size < ctxTree.get(b).size;
-        });
-    },
-  },
+//   descendants: {
+//     value: (node) => {
+//       const path = ctxTree.get(node);
+//       const length = path.length;
+//       return Array.from(ctxTree.entries())
+//         .reduce((acc, [key, value], i, arr) => {
+//           if (value.length <= length) return acc;
+//           const ctxPathSlice = value.slice(0, length);
+//           if (ctxPathSlice.every((ctx, idx, arr) => arr[idx] === path[idx])) {
+//             acc.push(key);
+//           }
+//           return acc;
+//         }, [])
+//         .sort((a, b) => {
+//           return ctxTree.get(a).size < ctxTree.get(b).size;
+//         });
+//     },
+//   },
 
-  relatives: {
-    value: (node) => {
-      return [ctxTree.ancestors(node), ctxTree.descendants(node)].flat(
-        Infinity
-      );
-    },
-  },
-});
+//   relatives: {
+//     value: (node) => {
+//       return [ctxTree.ancestors(node), ctxTree.descendants(node)].flat(
+//         Infinity
+//       );
+//     },
+//   },
+// });
 
 function define(tagName, componentObj, options = {}) {
   const { mixins = [], base = HTMLElement, extend = undefined } = options;
@@ -99,8 +106,13 @@ function define(tagName, componentObj, options = {}) {
   class BlissElement extends base {
     static get observedAttributes() {
       return [
+        "foo",
         /* array of attribute names to monitor for changes */
       ];
+    }
+
+    static get attrs() {
+      return { foo: { converter: Number, default: undefined } };
     }
 
     get isBlissElement() {
@@ -130,6 +142,21 @@ function define(tagName, componentObj, options = {}) {
         rootNode = this;
       }
 
+      this.constructor.observedAttributes.forEach((attr) => {
+        observe(() => {
+          const convertedValue = this.constructor.attrs[attr].converter(
+            this.state[attr]
+          );
+          if (convertedValue == null || convertedValue === false) {
+            this.removeAttribute(attr);
+          } else if (convertedValue === true) {
+            this.setAttribute(attr, "");
+          } else {
+            this.setAttribute(attr, convertedValue);
+          }
+        });
+      });
+
       observe(() => {
         render(rootNode, this.render());
       });
@@ -150,29 +177,31 @@ function define(tagName, componentObj, options = {}) {
       return node;
     }
 
-    get ctxAncestors() {
-      return ctxTree.ancestors(this);
-    }
+    // get ctxAncestors() {
+    //   return ctxTree.ancestors(this);
+    // }
 
-    get ctxDescendants() {
-      return ctxTree.descendants(this);
-    }
+    // get ctxDescendants() {
+    //   return ctxTree.descendants(this);
+    // }
 
-    get ctxRelatives() {
-      return ctxTree.relatives(this);
-    }
+    // get ctxRelatives() {
+    //   return ctxTree.relatives(this);
+    // }
 
-    getCtx(node) {
-      return ctxTree.get(node);
-    }
+    // getCtx(node) {
+    //   return ctxTree.get(node);
+    // }
 
-    ctxRemove(node) {
-      return ctxTree.remove(node);
-    }
+    // ctxRemove(node) {
+    //   return ctxTree.remove(node);
+    // }
 
-    get ctxTree() {
-      return ctxTree;
-    }
+    // get ctxTree() {
+    //   return ctxTree;
+    // }
+
+    ctx = ctxTree;
 
     buildCtxAncestors() {
       let node = this;
@@ -193,7 +222,9 @@ function define(tagName, componentObj, options = {}) {
       console.log("BLISS connectedCallback", this);
 
       // Must wait a ticx because child elements can be attached before their parents.
-      requestAnimationFrame(() => this.buildCtxAncestors());
+      requestAnimationFrame(() => {
+        this.buildCtxAncestors();
+      });
     }
 
     disconnectedCallback() {
@@ -223,7 +254,14 @@ function define(tagName, componentObj, options = {}) {
           const originalFn = BlissElement.prototype[key];
           BlissElement.prototype[key] = function (args) {
             originalFn.call(this, args);
-            value.call(this, args);
+            if (value.name === "connectedCallback") {
+              // Ensure ctx is set up before connectedCallback functions are run.
+              requestAnimationFrame(() => {
+                value.call(this, args);
+              });
+            } else {
+              value.call(this, args);
+            }
           };
         } else {
           if (isAnEvent(key)) {
@@ -249,4 +287,4 @@ function define(tagName, componentObj, options = {}) {
   customElements.define(tagName, BlissElement, { extends: extend });
 }
 
-export { define, html, svg, css, observable, observe };
+export { define, html, svg, css, observable, observe, raw };

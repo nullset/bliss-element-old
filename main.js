@@ -1,4 +1,4 @@
-import { html, css, define, observe } from "./BlissElement";
+import { html, css, define, observe, raw } from "./BlissElement";
 
 const Foo = {
   observedAttributes: [],
@@ -81,29 +81,35 @@ define("aha-tabs", Tabs);
 
 const Tab = {
   connectedCallback() {
-    // this.state.uuid = Math.random();
-    // this.tabsCtx = this.parentCtx("aha-tabs");
-    // this.thingCtx = this.parentCtx("aha-thing");
-    // this.watch(() => {
-    //   this.tabsCtx.state.activeTab = this;
-    //   // console.log("watching", this.state.active);
-    // });
+    this.tabs = this.ctxParent("aha-tabs");
+    this.setFirstTabActive();
+
+    observe(() => {
+      this.state.active = raw(this.tabs.state.activeTab) === this;
+    });
   },
+
+  setFirstTabActive() {
+    this.tabs.state.activeTab = this.tabs.firstElementChild;
+  },
+
+  disconnectedCallback() {
+    this.setFirstTabActive();
+  },
+
   render() {
     return html`<li>
       <slot></slot> : ${this.state.active} : ${this.state.uuid}
     </li>`;
   },
   onclick(e) {
-    // this.tabsCtx.activateTab(e.target);
-    // this.thingCtx.state.name = this.state.uuid;
-
-    this.state.active = true;
+    this.tabs.state.activeTab = e.target;
   },
 };
 define("aha-tab", Tab);
 
 const Thing = {
+  connectedCallback() {},
   render() {
     return html`<fieldset>
       <legend>${this.state.name}</legend>
