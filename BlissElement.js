@@ -101,14 +101,20 @@ function define(tagName, componentObj, options = {}) {
     return acc;
   }, []);
 
+  const observedAttrs = [];
+  const attributePropMap = {};
+  Object.entries(flattenedPrototype.attrs || {}).forEach((item) => {
+    const [propName, { attribute }] = item;
+    const attributeName = attribute || propName;
+    observedAttrs.push(attributeName);
+    attributePropMap[attributeName] = propName;
+  });
+
   const componentStylesheets = constructStylesheets(prototypeChain);
 
   class BlissElement extends base {
     static get observedAttributes() {
-      return [
-        // "foo",
-        /* array of attribute names to monitor for changes */
-      ];
+      return observedAttrs;
     }
 
     // static get attrs() {
@@ -123,7 +129,7 @@ function define(tagName, componentObj, options = {}) {
       this["on" + e.type](e);
     }
 
-    constructor() {
+    constructor(props) {
       super();
 
       preBoundEvents.forEach((event) => {
@@ -132,6 +138,36 @@ function define(tagName, componentObj, options = {}) {
 
       // this.state = this.props = observable(props(this));
       this.state = observable({});
+
+      Object.keys(this.attrs || {}).forEach((attr) => {
+        // Observe update state keys, and set attributes appropriately.
+        observe(() => {
+          const value = this.attrs[attr];
+          if (value.reflect === false) return;
+
+          const converter = value.type || String;
+          if (converter === Function) return;
+
+          const attributeName = value.attribute || attr;
+          let convertedValue =
+            this.state[attr] == null ? null : converter(this.state[attr]);
+          if (convertedValue == null || convertedValue === false) {
+            this.removeAttribute(attributeName);
+          } else if (convertedValue === true) {
+            this.setAttribute(attributeName, "");
+          } else if (converter === Array) {
+            convertedValue = Array.from(this.state[attr]);
+            debugger;
+            this.setAttribute(attributeName, JSON.stringify(convertedValue));
+          } else {
+            this.setAttribute(attributeName, convertedValue);
+          }
+        });
+
+        // Set inintial default values.
+        this.state[attr] = this.attrs[attr].default;
+      });
+
       this.internalState = observable({});
 
       let rootNode;
@@ -144,21 +180,6 @@ function define(tagName, componentObj, options = {}) {
 
       // this.constructor.observedAttributes.forEach((attr) => {
       // debugger;
-      Object.keys(this.attrs || {}).forEach((attr) => {
-        // debugger;
-        observe(() => {
-          if (this.attrs[attr].reflect === false) return;
-
-          const convertedValue = this.attrs[attr].type(this.state[attr]);
-          if (convertedValue == null || convertedValue === false) {
-            this.removeAttribute(attr);
-          } else if (convertedValue === true) {
-            this.setAttribute(attr, "");
-          } else {
-            this.setAttribute(attr, convertedValue);
-          }
-        });
-      });
 
       observe(() => {
         render(rootNode, this.render());
@@ -240,8 +261,26 @@ function define(tagName, componentObj, options = {}) {
       if (super.adoptedCallback) super.adoptedCallback();
     }
 
+    // Update state when attributes change.
     attributeChangedCallback(name, oldValue, newValue) {
       if (super.attributeChangedCallback) super.attributeChangedCallback();
+
+      const propName = attributePropMap[name];
+      const { type = String } = flattenedPrototype.attrs[propName];
+      let convertedValue;
+
+      if (type === Boolean) {
+        convertedValue = [null, "false"].includes(newValue) ? false : true;
+      } else if (type === Number) {
+        convertedValue = Number(newValue);
+      } else {
+        try {
+          convertedValue = JSON.parse(newValue);
+        } catch (e) {
+          convertedValue = String(newValue);
+        }
+      }
+      this.state[propName] = convertedValue;
     }
 
     render() {

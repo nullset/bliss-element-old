@@ -69,10 +69,12 @@ define("aha-tabs", Tabs);
 const Tab = {
   attrs: {
     active: { type: Boolean },
+    foo: { type: Number, default: 4 },
+    myKey: { attribute: "my-key" },
   },
   connectedCallback() {
     this.tabs = this.ctxParent("aha-tabs");
-    this.setFirstTabActive();
+    if (!this.tabs.state.activeTab) this.setFirstTabActive();
 
     observe(() => {
       this.state.active = raw(this.tabs.state.activeTab) === this;
