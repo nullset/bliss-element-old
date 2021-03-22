@@ -106,14 +106,14 @@ function define(tagName, componentObj, options = {}) {
   class BlissElement extends base {
     static get observedAttributes() {
       return [
-        "foo",
+        // "foo",
         /* array of attribute names to monitor for changes */
       ];
     }
 
-    static get attrs() {
-      return { foo: { converter: Number, default: undefined } };
-    }
+    // static get attrs() {
+    //   // return { foo: { type: Number, default: undefined } };
+    // }
 
     get isBlissElement() {
       return true;
@@ -142,11 +142,14 @@ function define(tagName, componentObj, options = {}) {
         rootNode = this;
       }
 
-      this.constructor.observedAttributes.forEach((attr) => {
+      // this.constructor.observedAttributes.forEach((attr) => {
+      // debugger;
+      Object.keys(this.attrs || {}).forEach((attr) => {
+        // debugger;
         observe(() => {
-          const convertedValue = this.constructor.attrs[attr].converter(
-            this.state[attr]
-          );
+          if (this.attrs[attr].reflect === false) return;
+
+          const convertedValue = this.attrs[attr].type(this.state[attr]);
           if (convertedValue == null || convertedValue === false) {
             this.removeAttribute(attr);
           } else if (convertedValue === true) {

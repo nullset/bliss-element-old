@@ -63,23 +63,13 @@ const Tabs = {
       <slot></slot>
     </ul>`;
   },
-  connectedCallback() {
-    this.watch(() => {
-      const activeTab = this.state.activeTab;
-      this.querySelectorAll(":scope > aha-tab").forEach((tab) => {
-        if (tab !== activeTab && tab.state) tab.state.active = false;
-      });
-    });
-  },
-  // activateTab(elem) {
-  //   this.querySelectorAll("aha-tab").forEach((tab) => {
-  //     tab.state.active = elem === tab ? true : false;
-  //   });
-  // },
 };
 define("aha-tabs", Tabs);
 
 const Tab = {
+  attrs: {
+    active: { type: Boolean },
+  },
   connectedCallback() {
     this.tabs = this.ctxParent("aha-tabs");
     this.setFirstTabActive();
@@ -94,7 +84,7 @@ const Tab = {
   },
 
   disconnectedCallback() {
-    this.setFirstTabActive();
+    if (raw(this.tabs.state.activeTab) === this) this.setFirstTabActive();
   },
 
   render() {
@@ -103,7 +93,7 @@ const Tab = {
     </li>`;
   },
   onclick(e) {
-    this.tabs.state.activeTab = e.target;
+    this.tabs.state.activeTab = e.currentTarget;
   },
 };
 define("aha-tab", Tab);
