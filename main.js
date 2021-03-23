@@ -9,6 +9,11 @@ const Tabs = {
       display: inline-flex;
     }
   `,
+  connectedCallback() {
+    observe(() => {
+      this.state.activeTab = this.state.activeTab ?? 0;
+    });
+  },
   render() {
     return html`
       <nav><slot name="tabs"></slot></nav>
@@ -42,28 +47,25 @@ const Tab = {
     const tabNodes = Array.from(this.tabs.querySelectorAll(this.tagName));
     this.state.tabIndex = tabNodes.findIndex((node) => node === this);
 
-    if (this.tabs.state.activeTab == null) this.setFirstTabActive();
+    if (this.state.active) this.tabs.state.activeTab = this.state.tabIndex;
 
     observe(() => {
       this.state.active = this.tabs.state.activeTab === this.state.tabIndex;
     });
   },
 
-  setFirstTabActive() {
-    this.tabs.state.activeTab = 0;
-  },
-
   disconnectedCallback() {
     if (this.tabs.state.activeTab === this.state.tabIndex)
-      this.setFirstTabActive();
+      this.tabs.state.activeTab = undefined;
   },
 
   render() {
     return html`<slot></slot> `;
   },
   onclick(e) {
-    if (!e.currentTarget.state.disabled)
+    if (!e.currentTarget.state.disabled) {
       this.tabs.state.activeTab = e.currentTarget.state.tabIndex;
+    }
   },
 };
 define("aha-tab", Tab);
@@ -83,9 +85,16 @@ const TabContent = {
     const tabNodes = Array.from(this.tabs.querySelectorAll(this.tagName));
     this.state.tabIndex = tabNodes.findIndex((node) => node === this);
 
+    if (this.state.active) this.tabs.state.activeTab = this.state.tabIndex;
+
     observe(() => {
       this.state.active = this.tabs.state.activeTab === this.state.tabIndex;
     });
+  },
+
+  disconnectedCallback() {
+    if (this.tabs.state.activeTab === this.state.tabIndex)
+      this.tabs.state.activeTab = undefined;
   },
 
   render() {

@@ -130,7 +130,7 @@ function define(tagName, componentObj, options = {}) {
       this["on" + e.type](e);
     }
 
-    constructor(props) {
+    constructor() {
       super();
 
       preBoundEvents.forEach((event) => {
