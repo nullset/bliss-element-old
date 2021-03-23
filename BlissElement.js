@@ -238,10 +238,10 @@ function define(tagName, componentObj, options = {}) {
       if (super.connectedCallback) super.connectedCallback();
       console.log("BLISS connectedCallback", this);
 
-      // Must wait a tick because child elements can be attached before their parents.
-      queueMicrotask(() => {
-        this.buildCtxAncestors();
-      });
+      // // Must wait a tick because child elements can be attached before their parents.
+      // queueMicrotask(() => {
+      //   this.buildCtxAncestors();
+      // });
     }
 
     disconnectedCallback() {
