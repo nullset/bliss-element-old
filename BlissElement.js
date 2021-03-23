@@ -133,12 +133,13 @@ function define(tagName, componentObj, options = {}) {
     constructor() {
       super();
 
+      this.state = observable({});
+
       preBoundEvents.forEach((event) => {
         this.addEventListener(event, this);
       });
 
       // this.state = this.props = observable(props(this));
-      this.state = observable({});
 
       Object.entries(flattenedPrototype.attrs).forEach(([attr, value]) => {
         // Observe update state keys, and set attributes appropriately.
@@ -240,7 +241,7 @@ function define(tagName, componentObj, options = {}) {
       if (super.connectedCallback) super.connectedCallback();
       console.log("BLISS connectedCallback", this);
 
-      // Must wait a ticx because child elements can be attached before their parents.
+      // Must wait a tick because child elements can be attached before their parents.
       requestAnimationFrame(() => {
         this.buildCtxAncestors();
       });

@@ -1,9 +1,6 @@
 import { html, css, define, observe, raw } from "./BlissElement";
 
 const Tabs = {
-  attrs: {
-    activeTab: { type: Number, attribute: "active-tab" },
-  },
   styles: css`
     :host ul {
       display: inline-flex;
