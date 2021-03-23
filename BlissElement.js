@@ -122,18 +122,16 @@ function define(tagName, componentObj, options = {}) {
       return observedAttrs;
     }
 
-    get isBlissElement() {
-      return true;
-    }
-
     handleEvent(e) {
       this["on" + e.type](e);
     }
 
+    state = observable({});
+
+    isBlissElement = true;
+
     constructor() {
       super();
-
-      this.state = observable({});
 
       preBoundEvents.forEach((event) => {
         this.addEventListener(event, this);
@@ -226,7 +224,6 @@ function define(tagName, componentObj, options = {}) {
     buildCtxAncestors() {
       let node = this;
       let ctxArr = [node];
-      console.log(node);
       while (node.parentElement) {
         node = node.parentElement;
         if (node.isBlissElement) ctxArr.push(node);
@@ -242,7 +239,7 @@ function define(tagName, componentObj, options = {}) {
       console.log("BLISS connectedCallback", this);
 
       // Must wait a tick because child elements can be attached before their parents.
-      requestAnimationFrame(() => {
+      queueMicrotask(() => {
         this.buildCtxAncestors();
       });
     }

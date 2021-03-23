@@ -121,3 +121,75 @@ const TabContent = {
   },
 };
 define("aha-tab-content", TabContent, { mixins: handleTabs });
+
+//----------------------------------------------------------------
+const Foo = {
+  observedAttributes: [],
+  styles: [
+    css`
+      h1 {
+        color: lime;
+      }
+    `,
+    css`
+      body {
+        background: orange;
+      }
+    `,
+  ],
+  onclick(e) {
+    debugger;
+  },
+  oninput(e) {
+    console.log(e.path[0].value);
+    this.value = e.path[0].value;
+  },
+  // hasShadowRoot: true,
+  connectedCallback() {
+    //   // super.connectedCallback();
+    console.log("FOO connectedCallback", this);
+  },
+  blah() {
+    debugger;
+  },
+  testBlah() {
+    console.log("FOO.testBlah", this);
+    debugger;
+  },
+  render() {
+    return html`<h1>
+      Hello 👋 <slot>µhtml</slot> : ${this.state.foo} : ${this.state.xxx}
+      <input oninput />
+    </h1>`;
+  },
+};
+
+const Bar = {
+  observedAttributes: [],
+  connectedCallback() {
+    //   // super.connectedCallback();
+    console.log("BAR connectedCallback", this);
+  },
+  blah() {
+    debugger;
+  },
+  testBlah() {
+    console.log("BAR.testBlah", this);
+    debugger;
+  },
+};
+define("foo-tag", Foo, { mixins: [Bar] });
+
+const Thing = {
+  connectedCallback() {},
+  render() {
+    return html`<fieldset>
+      ${this.state.name}
+      <slot></slot>
+    </fieldset>`;
+  },
+  onclick(e) {
+    // this.tabsCtx.activateTab(e.target);
+  },
+};
+define("aha-thing", Thing);
