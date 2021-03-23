@@ -23,10 +23,32 @@ const Tabs = {
 };
 define("aha-tabs", Tabs);
 
-const Tab = {
+const handleTabs = {
   attrs: {
     active: { type: Boolean },
   },
+  connectedCallback() {
+    this.tabs = this.ctxParent("aha-tabs");
+    const tabNodes = Array.from(this.tabs.querySelectorAll(this.tagName));
+    this.state.tabIndex = tabNodes.findIndex((node) => node === this);
+
+    if (this.state.active) this.tabs.state.activeTab = this.state.tabIndex;
+
+    observe(() => {
+      this.state.active = this.tabs.state.activeTab === this.state.tabIndex;
+    });
+  },
+
+  disconnectedCallback() {
+    if (this.tabs.state.activeTab === this.state.tabIndex)
+      this.tabs.state.activeTab = undefined;
+  },
+};
+
+const Tab = {
+  // attrs: {
+  //   active: { type: Boolean },
+  // },
   styles: css`
     :host {
       border-bottom: 2px solid transparent;
@@ -42,22 +64,22 @@ const Tab = {
     }
   `,
 
-  connectedCallback() {
-    this.tabs = this.ctxParent("aha-tabs");
-    const tabNodes = Array.from(this.tabs.querySelectorAll(this.tagName));
-    this.state.tabIndex = tabNodes.findIndex((node) => node === this);
+  // connectedCallback() {
+  //   this.tabs = this.ctxParent("aha-tabs");
+  //   const tabNodes = Array.from(this.tabs.querySelectorAll(this.tagName));
+  //   this.state.tabIndex = tabNodes.findIndex((node) => node === this);
 
-    if (this.state.active) this.tabs.state.activeTab = this.state.tabIndex;
+  //   if (this.state.active) this.tabs.state.activeTab = this.state.tabIndex;
 
-    observe(() => {
-      this.state.active = this.tabs.state.activeTab === this.state.tabIndex;
-    });
-  },
+  //   observe(() => {
+  //     this.state.active = this.tabs.state.activeTab === this.state.tabIndex;
+  //   });
+  // },
 
-  disconnectedCallback() {
-    if (this.tabs.state.activeTab === this.state.tabIndex)
-      this.tabs.state.activeTab = undefined;
-  },
+  // disconnectedCallback() {
+  //   if (this.tabs.state.activeTab === this.state.tabIndex)
+  //     this.tabs.state.activeTab = undefined;
+  // },
 
   render() {
     return html`<slot></slot> `;
@@ -68,37 +90,37 @@ const Tab = {
     }
   },
 };
-define("aha-tab", Tab);
+define("aha-tab", Tab, { mixins: handleTabs });
 
 const TabContent = {
-  attrs: {
-    active: { type: Boolean },
-  },
+  // attrs: {
+  //   active: { type: Boolean },
+  // },
   styles: css`
     :host(:not([active])) {
       display: none;
     }
   `,
 
-  connectedCallback() {
-    this.tabs = this.ctxParent("aha-tabs");
-    const tabNodes = Array.from(this.tabs.querySelectorAll(this.tagName));
-    this.state.tabIndex = tabNodes.findIndex((node) => node === this);
+  // connectedCallback() {
+  //   this.tabs = this.ctxParent("aha-tabs");
+  //   const tabNodes = Array.from(this.tabs.querySelectorAll(this.tagName));
+  //   this.state.tabIndex = tabNodes.findIndex((node) => node === this);
 
-    if (this.state.active) this.tabs.state.activeTab = this.state.tabIndex;
+  //   if (this.state.active) this.tabs.state.activeTab = this.state.tabIndex;
 
-    observe(() => {
-      this.state.active = this.tabs.state.activeTab === this.state.tabIndex;
-    });
-  },
+  //   observe(() => {
+  //     this.state.active = this.tabs.state.activeTab === this.state.tabIndex;
+  //   });
+  // },
 
-  disconnectedCallback() {
-    if (this.tabs.state.activeTab === this.state.tabIndex)
-      this.tabs.state.activeTab = undefined;
-  },
+  // disconnectedCallback() {
+  //   if (this.tabs.state.activeTab === this.state.tabIndex)
+  //     this.tabs.state.activeTab = undefined;
+  // },
 
   render() {
     return html`<slot></slot>`;
   },
 };
-define("aha-tab-content", TabContent);
+define("aha-tab-content", TabContent, { mixins: handleTabs });

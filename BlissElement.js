@@ -99,7 +99,7 @@ function define(tagName, componentObj, options = {}) {
     },
   });
   prototypeChain.push(componentObj);
-  const flattenedPrototype = deepmerge(...prototypeChain);
+  const flattenedPrototype = deepmerge.all(prototypeChain);
   const preBoundEvents = Object.keys(flattenedPrototype).reduce((acc, key) => {
     if (isAnEvent(key)) acc.push(key.replace(eventRegex, "$1"));
     return acc;
