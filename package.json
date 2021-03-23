@@ -2,7 +2,7 @@
   "name": "wc",
   "version": "0.0.0",
   "scripts": {
-    "dev": "vite --port 5003",
+    "dev": "vite --port 5033",
     "build": "vite build",
     "serve": "vite preview"
   },
@@ -12,6 +12,7 @@
   "dependencies": {
     "@nx-js/observer-util": "^4.2.2",
     "construct-style-sheets-polyfill": "^2.4.16",
+    "deepmerge": "^4.2.2",
     "element-props": "^1.4.0",
     "haunted": "^4.7.1",
     "uce": "^1.15.0",

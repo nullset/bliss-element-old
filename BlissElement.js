@@ -2,6 +2,7 @@ import { observable, observe, raw } from "@nx-js/observer-util";
 import { render, html, svg } from "uhtml";
 import props from "element-props";
 import "construct-style-sheets-polyfill";
+import deepmerge from "deepmerge";
 
 function css(string) {
   return string;
@@ -91,11 +92,14 @@ const ctxTree = new Map();
 function define(tagName, componentObj, options = {}) {
   const { mixins = [], base = HTMLElement, extend = undefined } = options;
   const prototypeChain = Array.isArray(mixins) ? mixins : [mixins];
+  prototypeChain.unshift({
+    attrs: {
+      hidden: { type: Boolean, default: false },
+      disabled: { type: Boolean, default: false },
+    },
+  });
   prototypeChain.push(componentObj);
-  const flattenedPrototype = Object.assign(
-    Object.create(null),
-    ...prototypeChain
-  );
+  const flattenedPrototype = deepmerge(...prototypeChain);
   const preBoundEvents = Object.keys(flattenedPrototype).reduce((acc, key) => {
     if (isAnEvent(key)) acc.push(key.replace(eventRegex, "$1"));
     return acc;
@@ -103,7 +107,8 @@ function define(tagName, componentObj, options = {}) {
 
   const observedAttrs = [];
   const attributePropMap = {};
-  Object.entries(flattenedPrototype.attrs || {}).forEach((item) => {
+
+  Object.entries(flattenedPrototype.attrs).forEach((item) => {
     const [propName, { attribute }] = item;
     const attributeName = attribute || propName;
     observedAttrs.push(attributeName);
@@ -116,10 +121,6 @@ function define(tagName, componentObj, options = {}) {
     static get observedAttributes() {
       return observedAttrs;
     }
-
-    // static get attrs() {
-    //   // return { foo: { type: Number, default: undefined } };
-    // }
 
     get isBlissElement() {
       return true;
@@ -139,10 +140,10 @@ function define(tagName, componentObj, options = {}) {
       // this.state = this.props = observable(props(this));
       this.state = observable({});
 
-      Object.keys(this.attrs || {}).forEach((attr) => {
+      Object.entries(flattenedPrototype.attrs).forEach(([attr, value]) => {
         // Observe update state keys, and set attributes appropriately.
         observe(() => {
-          const value = this.attrs[attr];
+          // const value = this.attrs[attr];
           if (value.reflect === false) return;
 
           const converter = value.type || String;
@@ -157,7 +158,6 @@ function define(tagName, componentObj, options = {}) {
             this.setAttribute(attributeName, "");
           } else if (converter === Array) {
             convertedValue = Array.from(this.state[attr]);
-            debugger;
             this.setAttribute(attributeName, JSON.stringify(convertedValue));
           } else {
             this.setAttribute(attributeName, convertedValue);
@@ -165,7 +165,7 @@ function define(tagName, componentObj, options = {}) {
         });
 
         // Set inintial default values.
-        this.state[attr] = this.attrs[attr].default;
+        this.state[attr] = flattenedPrototype.attrs[attr].default;
       });
 
       this.internalState = observable({});
@@ -186,17 +186,12 @@ function define(tagName, componentObj, options = {}) {
       });
     }
 
-    watch(fn) {
-      observe(fn);
-    }
-
     ctxParent(matcher) {
       let node = this;
       let ctx;
       while (!ctx && node.parentElement) {
         node = node.parentElement;
-        if (!node.isBlissElement) return;
-        if (node.matches(matcher)) ctx = node;
+        if (node.isBlissElement && node.matches(matcher)) ctx = node;
       }
       return node;
     }

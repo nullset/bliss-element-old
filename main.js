@@ -1,67 +1,19 @@
 import { html, css, define, observe, raw } from "./BlissElement";
 
-const Foo = {
-  observedAttributes: [],
-  styles: [
-    css`
-      h1 {
-        color: lime;
-      }
-    `,
-    css`
-      body {
-        background: orange;
-      }
-    `,
-  ],
-  onclick(e) {
-    debugger;
-  },
-  oninput(e) {
-    console.log(e.path[0].value);
-    this.value = e.path[0].value;
-  },
-  // hasShadowRoot: true,
-  connectedCallback() {
-    //   // super.connectedCallback();
-    console.log("FOO connectedCallback", this);
-  },
-  blah() {
-    debugger;
-  },
-  testBlah() {
-    console.log("FOO.testBlah", this);
-    debugger;
-  },
-  render() {
-    return html`<h1>
-      Hello 👋 <slot>µhtml</slot> : ${this.state.foo} : ${this.state.xxx}
-      <input oninput />
-    </h1>`;
-  },
-};
-
-const Bar = {
-  observedAttributes: [],
-  connectedCallback() {
-    //   // super.connectedCallback();
-    console.log("BAR connectedCallback", this);
-  },
-  blah() {
-    debugger;
-  },
-  testBlah() {
-    console.log("BAR.testBlah", this);
-    debugger;
-  },
-};
-define("foo-tag", Foo, { mixins: [Bar] });
-
 const Tabs = {
+  attrs: {
+    activeTab: { type: Number, attribute: "active-tab" },
+  },
+  styles: css`
+    :host ul {
+      display: inline-flex;
+    }
+  `,
   render() {
-    return html`<ul>
-      <slot></slot>
-    </ul>`;
+    return html`
+      <nav><slot name="tabs"></slot></nav>
+      <div><slot></slot></div>
+    `;
   },
 };
 define("aha-tabs", Tabs);
@@ -69,47 +21,75 @@ define("aha-tabs", Tabs);
 const Tab = {
   attrs: {
     active: { type: Boolean },
-    foo: { type: Number, default: 4 },
-    myKey: { attribute: "my-key" },
   },
+  styles: css`
+    :host {
+      border-bottom: 2px solid transparent;
+    }
+    :host([active]) {
+      border-bottom-color: purple;
+    }
+    :host([disabled]) {
+      opacity: 0.5;
+    }
+    :host(:not([disabled])) {
+      cursor: pointer;
+    }
+  `,
+
   connectedCallback() {
     this.tabs = this.ctxParent("aha-tabs");
-    if (!this.tabs.state.activeTab) this.setFirstTabActive();
+    const tabNodes = Array.from(this.tabs.querySelectorAll(this.tagName));
+    this.state.tabIndex = tabNodes.findIndex((node) => node === this);
+
+    if (this.tabs.state.activeTab == null) this.setFirstTabActive();
 
     observe(() => {
-      this.state.active = raw(this.tabs.state.activeTab) === this;
+      this.state.active = this.tabs.state.activeTab === this.state.tabIndex;
     });
   },
 
   setFirstTabActive() {
-    this.tabs.state.activeTab = this.tabs.firstElementChild;
+    this.tabs.state.activeTab = 0;
   },
 
   disconnectedCallback() {
-    if (raw(this.tabs.state.activeTab) === this) this.setFirstTabActive();
+    if (this.tabs.state.activeTab === this.state.tabIndex)
+      this.setFirstTabActive();
   },
 
   render() {
-    return html`<li>
-      <slot></slot> : ${this.state.active} : ${this.state.uuid}
-    </li>`;
+    return html`<slot></slot> `;
   },
   onclick(e) {
-    this.tabs.state.activeTab = e.currentTarget;
+    if (!e.currentTarget.state.disabled)
+      this.tabs.state.activeTab = e.currentTarget.state.tabIndex;
   },
 };
 define("aha-tab", Tab);
 
-const Thing = {
-  connectedCallback() {},
-  render() {
-    return html`<fieldset>
-      <legend>${this.state.name}</legend>
-      <slot></slot>
-    </fieldset>`;
+const TabContent = {
+  attrs: {
+    active: { type: Boolean },
   },
-  onclick(e) {
-    // this.tabsCtx.activateTab(e.target);
+  styles: css`
+    :host(:not([active])) {
+      display: none;
+    }
+  `,
+
+  connectedCallback() {
+    this.tabs = this.ctxParent("aha-tabs");
+    const tabNodes = Array.from(this.tabs.querySelectorAll(this.tagName));
+    this.state.tabIndex = tabNodes.findIndex((node) => node === this);
+
+    observe(() => {
+      this.state.active = this.tabs.state.activeTab === this.state.tabIndex;
+    });
+  },
+
+  render() {
+    return html`<slot></slot>`;
   },
 };
-define("aha-thing", Thing);
+define("aha-tab-content", TabContent);

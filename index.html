@@ -10,12 +10,34 @@
     <div id="app"></div>
     <!-- <foo-tag>Neighbor! <foo-tag>Postman!</foo-tag></foo-tag> -->
 
-    <aha-thing>
-      <aha-tabs>
+    <aha-tabs>
+      <div slot="tabs">
         <aha-tab>One</aha-tab>
-        <aha-tab>Two <aha-thing></aha-thing></aha-tab>
-      </aha-tabs>
-    </aha-thing>
+        <aha-tab active>Two</aha-tab>
+      </div>
+      <aha-tab-content>
+        <p>
+          Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam
+          nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat,
+          sed diam voluptua. At vero eos et accusam et justo duo dolores et ea
+          rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem
+          ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur
+          sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et
+          dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam
+          et justo duo dolores et ea rebum.
+        </p>
+      </aha-tab-content>
+      <aha-tab-content>
+        <p>
+          Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum
+          dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing
+          elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore
+          magna aliquyam erat, sed diam voluptua. At vero eos et accusam et
+          justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea
+          takimata sanctus est Lorem ipsum dolor sit amet.
+        </p>
+      </aha-tab-content>
+    </aha-tabs>
 
     <!-- <my-component>ouo</my-component> -->
     <!-- <my-counter></my-counter> -->
