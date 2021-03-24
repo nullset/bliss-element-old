@@ -1,5 +1,9 @@
 # Bliss Element
 
+## TLDR; Show me stuff
+
+Pull down the repository, switch to the directory, `npm install` everything (or better yet, use `pnpm install`), and then `npm run dev`. Open a browser to `localhost:5033`.
+
 ## Why another web component library?
 
 Because sane defaults, coupled with observable state, coupled with composable behaviors is powerful.
