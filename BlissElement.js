@@ -132,17 +132,18 @@ function define(tagName, componentObj, options = {}) {
     }
 
     // Convert properties to strings and set on attributes.
+    // Based on `state` so values are reactive.
     convertPropsToAttributes() {
       Object.entries(flattenedPrototype.attrs).forEach(([attr, value]) => {
+        if (value.reflect === false) return;
+
+        const converter = value.type || String;
+        if (converter === Function) return;
+
+        const attributeName = value.attribute || attr.toLowerCase();
+
         // Observe update state keys, and set attributes appropriately.
         observe(() => {
-          // const value = this.attrs[attr];
-          if (value.reflect === false) return;
-
-          const converter = value.type || String;
-          if (converter === Function) return;
-
-          const attributeName = value.attribute || attr;
           let convertedValue =
             this.state[attr] == null ? null : converter(this.state[attr]);
           if (convertedValue == null || convertedValue === false) {
