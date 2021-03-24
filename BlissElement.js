@@ -64,7 +64,9 @@ function define(tagName, componentObj, options = {}) {
 
   // TODO: Need to make sure lifecycleMethods are not here
   const preBoundEvents = Object.keys(flattenedPrototype).reduce((acc, key) => {
-    if (isAnEvent(key)) acc.push(key.replace(eventRegex, "$1"));
+    if (isAnEvent(key) && !lifecycleMethods.includes(key)) {
+      acc.push(key.replace(eventRegex, "$1"));
+    }
     return acc;
   }, []);
 
