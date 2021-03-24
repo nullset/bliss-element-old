@@ -239,7 +239,7 @@ In Bliss web components, any object can be composed with any other object. There
   If our component defines the same `attr` key as an earlier mixin, our component's `attr` key will override the earlier mixin's.
 - All other methods, variables, etc. will be overwritten by composition. In the example above, this means that if we have a web component based on Bar and we call Bar's `logOnDragStart` method, we will see a log message of "Bar logOnDragStart" rather than "Draggable logOnDragStart".
 
-While this may sound like a lot to keep in mind, in practice it makes building surprising complex behaviors easy.
+While this may sound like a lot to keep in mind, in practice it makes building surprisingly complex behaviors easy.
 
 Concerns that are shared between different components can have _both_ their lifecycle methods and their associated attributes/properties/state mixed into those components with essentially no effort.
 
