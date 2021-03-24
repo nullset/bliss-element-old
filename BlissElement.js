@@ -252,6 +252,8 @@ function define(tagName, componentObj, options = {}) {
           this.state[key] = value;
           return value;
         },
+        enumerable: true,
+        configurable: true,
       });
     }
   });
