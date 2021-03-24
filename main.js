@@ -1,5 +1,6 @@
 import { html, css, define, observe, raw } from "./BlissElement";
 
+//
 const Tabs = {
   styles: css`
     :host nav {
@@ -22,14 +23,14 @@ const Tabs = {
     `;
   },
 };
-define("aha-tabs", Tabs);
+define("bliss-tabs", Tabs);
 
 const tabbable = {
   attrs: {
     active: { type: Boolean },
   },
   onMount() {
-    this.tabs = this.getContext("aha-tabs");
+    this.tabs = this.getContext("bliss-tabs");
     const nodes = Array.from(this.tabs.querySelectorAll(this.tagName));
     this.state.index = nodes.findIndex((node) => node === this);
 
@@ -94,7 +95,7 @@ const Tab = {
     }
   },
 };
-define("aha-tab", Tab, { mixins: [tabbable, keyboardNavigable] });
+define("bliss-tab", Tab, { mixins: [tabbable, keyboardNavigable] });
 
 const TabContent = {
   onMount() {
@@ -108,77 +109,4 @@ const TabContent = {
     return html`<slot></slot>`;
   },
 };
-define("aha-tab-content", TabContent, { mixins: tabbable });
-
-//----------------------------------------------------------------
-const Foo = {
-  attrs: { foo: { type: String } },
-  styles: [
-    css`
-      h1 {
-        color: lime;
-      }
-    `,
-    css`
-      body {
-        background: orange;
-      }
-    `,
-  ],
-  onclick(e) {
-    debugger;
-  },
-  oninput(e) {
-    console.log(e.path[0].value);
-    this.value = e.path[0].value;
-  },
-  // hasShadowRoot: true,
-  // connectedCallback() {
-  //   //   // super.connectedCallback();
-  //   console.log("FOO connectedCallback", this);
-  // },
-  blah() {
-    debugger;
-  },
-  testBlah() {
-    console.log("FOO.testBlah", this);
-    debugger;
-  },
-  render() {
-    return html`<h1>
-      Hello 👋 <slot>µhtml</slot> : ${this.state.foo} : ${this.state.xxx}
-      <input oninput />
-    </h1>`;
-  },
-};
-
-const Bar = {
-  shadow: false,
-  observedAttributes: [],
-  // connectedCallback() {
-  //   //   // super.connectedCallback();
-  //   // console.warn("BAR connectedCallback", this);
-  // },
-  // onMount() {
-  //   console.warn("onMount in Bar", this);
-  // },
-  blah() {
-    debugger;
-  },
-  testBlah() {
-    console.log("BAR.testBlah", this);
-    debugger;
-  },
-};
-define("aha-foo", Foo, { mixins: [Bar] });
-
-const Thing = {
-  onMount() {},
-  render() {
-    return html`<slot></slot>`;
-  },
-  onclick(e) {
-    // this.tabsCtx.activateTab(e.target);
-  },
-};
-define("aha-thing", Thing);
+define("bliss-tab-content", TabContent, { mixins: tabbable });
