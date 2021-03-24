@@ -46,6 +46,8 @@ function isAnEvent(name) {
 
 const lifecycleMethods = ["onInit", "onMount", "onUnmount", "onAdopted"];
 
+const globalContext = new Set();
+
 function define(tagName, componentObj, options = {}) {
   const { mixins = [], base = HTMLElement, extend = undefined } = options;
 
@@ -98,19 +100,24 @@ function define(tagName, componentObj, options = {}) {
 
     constructor() {
       super();
-      this.bindEvents();
+      Array.from(this.attributes).forEach((attrName) => {
+        this.convertAttributeToProp(attrName, this[attrName]);
+      });
       this.convertPropsToAttributes();
+      this.bindEvents();
       this.callLifecyleMethods("onInit");
       this.renderToRoot();
     }
 
     connectedCallback() {
       if (super.connectedCallback) super.connectedCallback();
+      globalContext.add(this, true);
       this.callLifecyleMethods("onMount");
     }
 
     disconnectedCallback() {
       if (super.disconnectedCallback) super.disconnectedCallback();
+      globalContext.delete(this);
       this.callLifecyleMethods("onUnmount");
     }
 
@@ -122,23 +129,24 @@ function define(tagName, componentObj, options = {}) {
     // Update state when attributes change.
     attributeChangedCallback(name, oldValue, newValue) {
       if (super.attributeChangedCallback) super.attributeChangedCallback();
+      this.convertAttributeToProp(name, newValue);
 
-      const propName = attributePropMap[name];
-      const { type = String } = flattenedPrototype.attrs[propName];
-      let convertedValue;
+      // const propName = attributePropMap[name];
+      // const { type = String } = flattenedPrototype.attrs[propName];
+      // let convertedValue;
 
-      if (type === Boolean) {
-        convertedValue = [null, "false"].includes(newValue) ? false : true;
-      } else if (type === Number) {
-        convertedValue = Number(newValue);
-      } else {
-        try {
-          convertedValue = JSON.parse(newValue);
-        } catch (e) {
-          convertedValue = String(newValue);
-        }
-      }
-      this.state[propName] = convertedValue;
+      // if (type === Boolean) {
+      //   convertedValue = [null, "false"].includes(newValue) ? false : true;
+      // } else if (type === Number) {
+      //   convertedValue = Number(newValue);
+      // } else {
+      //   try {
+      //     convertedValue = JSON.parse(newValue);
+      //   } catch (e) {
+      //     convertedValue = String(newValue);
+      //   }
+      // }
+      // this[propName] = convertedValue;
     }
 
     bindEvents() {
@@ -179,6 +187,25 @@ function define(tagName, componentObj, options = {}) {
       });
     }
 
+    convertAttributeToProp(name, newValue) {
+      const propName = attributePropMap[name];
+      const type = flattenedPrototype.attrs[propName]?.type || String;
+      let convertedValue;
+
+      if (type === Boolean) {
+        convertedValue = [null, "false"].includes(newValue) ? false : true;
+      } else if (type === Number) {
+        convertedValue = Number(newValue);
+      } else {
+        try {
+          convertedValue = JSON.parse(newValue);
+        } catch (e) {
+          convertedValue = String(newValue);
+        }
+      }
+      this[propName] = convertedValue;
+    }
+
     renderToRoot() {
       let rootNode;
       if (this.shadow !== false) {
@@ -200,17 +227,30 @@ function define(tagName, componentObj, options = {}) {
       }
     }
 
-    getContext(matcher) {
+    getParentContext(matcher) {
       let node = this;
       let ctx;
       while (!ctx && node.parentElement) {
         node = node.parentElement;
-        if (node.isBlissElement && node.matches(matcher)) ctx = node;
+        if (
+          node.isBlissElement &&
+          (node === matcher || node.matches(matcher))
+        ) {
+          ctx = node;
+        }
       }
       if (node && document.documentElement !== node) return node;
       throw new Error(
         `A context that matches "${matcher}" could not be found for <${this.tagName.toLowerCase()}>.`
       );
+    }
+
+    getGlobalContext(matcher) {
+      const ctx = globalContext.find((node) => {
+        return node === matcher || node.matches(matcher);
+      });
+      if (ctx) return ctx;
+      throw new Error(`Unable to find a context that matches ${matcher}.`);
     }
 
     render() {

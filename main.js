@@ -29,7 +29,7 @@ const tabbable = {
     active: { type: Boolean },
   },
   onMount() {
-    this.tabs = this.getContext("aha-tabs");
+    this.tabs = this.getParentContext("aha-tabs");
     const nodes = Array.from(this.tabs.querySelectorAll(this.tagName));
     this.state.index = nodes.findIndex((node) => node === this);
 
@@ -99,9 +99,7 @@ define("aha-tab", Tab, { mixins: [tabbable, keyboardNavigable] });
 const TabContent = {
   onMount() {
     observe(() => {
-      const activeIsNotHost = this.tabs.state.activeTab !== this.state.index;
-      this.state.disabled = activeIsNotHost;
-      this.state.hidden = activeIsNotHost;
+      this.state.hidden = this.tabs.state.activeTab !== this.state.index;
     });
   },
   render() {
@@ -110,75 +108,26 @@ const TabContent = {
 };
 define("aha-tab-content", TabContent, { mixins: tabbable });
 
-//----------------------------------------------------------------
-const Foo = {
-  attrs: { foo: { type: String } },
-  styles: [
-    css`
-      h1 {
-        color: lime;
-      }
-    `,
-    css`
-      body {
-        background: orange;
-      }
-    `,
-  ],
-  onclick(e) {
-    debugger;
-  },
-  oninput(e) {
-    console.log(e.path[0].value);
-    this.value = e.path[0].value;
-  },
-  // hasShadowRoot: true,
-  // connectedCallback() {
-  //   //   // super.connectedCallback();
-  //   console.log("FOO connectedCallback", this);
-  // },
-  blah() {
-    debugger;
-  },
-  testBlah() {
-    console.log("FOO.testBlah", this);
-    debugger;
-  },
-  render() {
-    return html`<h1>
-      Hello 👋 <slot>µhtml</slot> : ${this.state.foo} : ${this.state.xxx}
-      <input oninput />
-    </h1>`;
-  },
-};
+// ----------------------------------------------------------------
 
-const Bar = {
-  shadow: false,
-  observedAttributes: [],
-  // connectedCallback() {
-  //   //   // super.connectedCallback();
-  //   // console.warn("BAR connectedCallback", this);
-  // },
-  // onMount() {
-  //   console.warn("onMount in Bar", this);
-  // },
-  blah() {
+const ActiveTabBadge = {
+  attrs: { ref: { type: String } },
+  onInit() {
     debugger;
+    // this.tabs = this.getGlobalContext(this.tabsRef);
   },
-  testBlah() {
-    console.log("BAR.testBlah", this);
-    debugger;
-  },
-};
-define("aha-foo", Foo, { mixins: [Bar] });
-
-const Thing = {
-  onMount() {},
+  styles: css`
+    :host {
+      display: inline-flex;
+      height: 20px;
+      width: 20px;
+      border-radius: 50%;
+      background: lime;
+      color: white;
+    }
+  `,
   render() {
-    return html`<slot></slot>`;
-  },
-  onclick(e) {
-    // this.tabsCtx.activateTab(e.target);
+    return html``;
   },
 };
-define("aha-thing", Thing);
+define("active-tab-badge", ActiveTabBadge);
