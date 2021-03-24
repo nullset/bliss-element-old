@@ -1,7 +1,7 @@
 import { observable, observe, raw } from "@nx-js/observer-util";
 import { render, html, svg } from "uhtml";
-import "construct-style-sheets-polyfill";
 import deepmerge from "deepmerge";
+import "construct-style-sheets-polyfill";
 
 function css(string) {
   return string;
