@@ -24,6 +24,9 @@ const tabbable = {
   attrs: {
     active: { type: Boolean },
   },
+  onMount() {
+    debugger;
+  },
   connectedCallback() {
     this.tabs = this.ctxParent("aha-tabs");
     const nodes = Array.from(this.tabs.querySelectorAll(this.tagName));

@@ -29,6 +29,9 @@ function constructStylesheets(prototypes) {
 }
 
 const lifecycleMethods = {
+  onInit: true,
+  onMount: true,
+  onUnmount: true,
   connectedCallback: true,
   disconnectedCallback: true,
   adoptedCallback: true,
@@ -40,7 +43,7 @@ function isAnEvent(name) {
   return eventRegex.test(name);
 }
 
-const ctxTree = new Map();
+// const ctxTree = new Map();
 // Object.defineProperties(ctxTree, {
 //   foo: {
 //     value: () => {
@@ -139,6 +142,7 @@ function define(tagName, componentObj, options = {}) {
 
       // this.state = this.props = observable(props(this));
 
+      // Convert properties to strings and set on attributes.
       Object.entries(flattenedPrototype.attrs).forEach(([attr, value]) => {
         // Observe update state keys, and set attributes appropriately.
         observe(() => {
@@ -167,19 +171,16 @@ function define(tagName, componentObj, options = {}) {
         this.state[attr] = flattenedPrototype.attrs[attr].default;
       });
 
-      this.internalState = observable({});
-
       let rootNode;
       if (this.hasShadowRoot == null) {
         rootNode = this.attachShadow({ mode: "open" });
         rootNode.adoptedStyleSheets = componentStylesheets;
       } else {
         rootNode = this;
+        // TODO: Attach stylesheets when component does not have shadow DOM.
       }
 
-      // this.constructor.observedAttributes.forEach((attr) => {
-      // debugger;
-
+      // Render component into root node.;
       observe(() => {
         render(rootNode, this.render());
       });
@@ -195,44 +196,7 @@ function define(tagName, componentObj, options = {}) {
       return node;
     }
 
-    // get ctxAncestors() {
-    //   return ctxTree.ancestors(this);
-    // }
-
-    // get ctxDescendants() {
-    //   return ctxTree.descendants(this);
-    // }
-
-    // get ctxRelatives() {
-    //   return ctxTree.relatives(this);
-    // }
-
-    // getCtx(node) {
-    //   return ctxTree.get(node);
-    // }
-
-    // ctxRemove(node) {
-    //   return ctxTree.remove(node);
-    // }
-
-    // get ctxTree() {
-    //   return ctxTree;
-    // }
-
-    ctx = ctxTree;
-
-    buildCtxAncestors() {
-      let node = this;
-      let ctxArr = [node];
-      while (node.parentElement) {
-        node = node.parentElement;
-        if (node.isBlissElement) ctxArr.push(node);
-      }
-
-      const c = ctxArr[0];
-      const path = ctxArr.slice(0).reverse();
-      ctxTree.set(c, path);
-    }
+    // ctx = ctxTree;
 
     connectedCallback() {
       if (super.connectedCallback) super.connectedCallback();
@@ -247,7 +211,7 @@ function define(tagName, componentObj, options = {}) {
     disconnectedCallback() {
       if (super.disconnectedCallback) super.disconnectedCallback();
 
-      return ctxTree.delete(this);
+      // return ctxTree.delete(this);
     }
 
     adoptedCallback() {
