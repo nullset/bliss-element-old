@@ -44,7 +44,6 @@ const tabbable = {
 
 const Tab = {
   attrs: {
-    active: { type: Boolean },
     slot: { default: "tabs" },
   },
   styles: css`
@@ -53,7 +52,7 @@ const Tab = {
       cursor: pointer;
     }
     :host([active]) {
-      border-bottom-color: purple;
+      border-bottom-color: blueviolet;
     }
     :host([disabled]) {
       opacity: 0.5;
@@ -63,29 +62,6 @@ const Tab = {
       margin-left: 1rem;
     }
   `,
-
-  // connectedCallback() {
-  //   this.setAttribute("slot", "tabs");
-  // },
-
-  // onMount() {
-  //   this.tabs = this.getContext("aha-tabs");
-  //   const tabNodes = Array.from(this.tabs.querySelectorAll(this.tagName));
-  //   this.state.tabIndex = tabNodes.findIndex((node) => node === this);
-
-  //   if (this.state.active) this.tabs.state.activeTab = this.state.tabIndex;
-
-  //   observe(() => {
-  //     this.state.active = this.tabs.state.activeTab === this.state.tabIndex;
-  //   });
-  // },
-
-  // onUnmount() {
-  //   debugger;
-  //   if (this.tabs.state.activeTab === this.state.tabIndex)
-  //     this.tabs.state.activeTab = undefined;
-  // },
-
   render() {
     return html`<slot></slot> `;
   },
@@ -98,32 +74,11 @@ const Tab = {
 define("aha-tab", Tab, { mixins: tabbable });
 
 const TabContent = {
-  // attrs: {
-  //   active: { type: Boolean },
-  // },
   styles: css`
     :host(:not([active])) {
       display: none;
     }
   `,
-
-  // connectedCallback() {
-  //   this.tabs = this.getContext("aha-tabs");
-  //   const tabNodes = Array.from(this.tabs.querySelectorAll(this.tagName));
-  //   this.state.tabIndex = tabNodes.findIndex((node) => node === this);
-
-  //   if (this.state.active) this.tabs.state.activeTab = this.state.tabIndex;
-
-  //   observe(() => {
-  //     this.state.active = this.tabs.state.activeTab === this.state.tabIndex;
-  //   });
-  // },
-
-  // disconnectedCallback() {
-  //   if (this.tabs.state.activeTab === this.state.tabIndex)
-  //     this.tabs.state.activeTab = undefined;
-  // },
-
   render() {
     return html`<slot></slot>`;
   },
