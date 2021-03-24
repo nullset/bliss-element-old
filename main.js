@@ -25,7 +25,7 @@ const tabbable = {
     active: { type: Boolean },
   },
   onMount() {
-    this.tabs = this.getContext("aha-tabs2");
+    this.tabs = this.getContext("aha-tabs");
     const nodes = Array.from(this.tabs.querySelectorAll(this.tagName));
     this.state.tabIndex = nodes.findIndex((node) => node === this);
 
