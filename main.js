@@ -2,7 +2,7 @@ import { html, css, define, observe, raw } from "./BlissElement";
 
 const Tabs = {
   styles: css`
-    :host ul {
+    :host nav {
       display: inline-flex;
     }
   `,
@@ -20,14 +20,14 @@ const Tabs = {
 };
 define("aha-tabs", Tabs);
 
-const handleTabs = {
+const tabbable = {
   attrs: {
     active: { type: Boolean },
   },
   connectedCallback() {
     this.tabs = this.ctxParent("aha-tabs");
-    const tabNodes = Array.from(this.tabs.querySelectorAll(this.tagName));
-    this.state.tabIndex = tabNodes.findIndex((node) => node === this);
+    const nodes = Array.from(this.tabs.querySelectorAll(this.tagName));
+    this.state.tabIndex = nodes.findIndex((node) => node === this);
 
     if (this.state.active) this.tabs.state.activeTab = this.state.tabIndex;
 
@@ -43,23 +43,30 @@ const handleTabs = {
 };
 
 const Tab = {
-  // attrs: {
-  //   active: { type: Boolean },
-  // },
+  attrs: {
+    active: { type: Boolean },
+    slot: { default: "tabs" },
+  },
   styles: css`
     :host {
       border-bottom: 2px solid transparent;
+      cursor: pointer;
     }
     :host([active]) {
       border-bottom-color: purple;
     }
     :host([disabled]) {
       opacity: 0.5;
+      cursor: not-allowed;
     }
-    :host(:not([disabled])) {
-      cursor: pointer;
+    :host(:not(:nth-of-type(1))) {
+      margin-left: 1rem;
     }
   `,
+
+  // connectedCallback() {
+  //   this.setAttribute("slot", "tabs");
+  // },
 
   // connectedCallback() {
   //   this.tabs = this.ctxParent("aha-tabs");
@@ -87,7 +94,7 @@ const Tab = {
     }
   },
 };
-define("aha-tab", Tab, { mixins: handleTabs });
+define("aha-tab", Tab, { mixins: tabbable });
 
 const TabContent = {
   // attrs: {
@@ -120,7 +127,7 @@ const TabContent = {
     return html`<slot></slot>`;
   },
 };
-define("aha-tab-content", TabContent, { mixins: handleTabs });
+define("aha-tab-content", TabContent, { mixins: tabbable });
 
 //----------------------------------------------------------------
 const Foo = {
@@ -183,10 +190,7 @@ define("foo-tag", Foo, { mixins: [Bar] });
 const Thing = {
   connectedCallback() {},
   render() {
-    return html`<fieldset>
-      ${this.state.name}
-      <slot></slot>
-    </fieldset>`;
+    return html`<slot></slot>`;
   },
   onclick(e) {
     // this.tabsCtx.activateTab(e.target);
