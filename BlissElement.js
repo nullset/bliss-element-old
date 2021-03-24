@@ -48,7 +48,7 @@ const lifecycleMethods = ["onInit", "onMount", "onUnmount", "onAdopted"];
 
 function define(tagName, componentObj, options = {}) {
   const { mixins = [], base = HTMLElement, extend = undefined } = options;
-  const prototypeChain = [mixins].flat(Infinity);
+  let prototypeChain = [mixins];
 
   // Add a default mixin that creates observable attributes for `hidden` and `disabled`.
   prototypeChain.unshift({
@@ -60,6 +60,7 @@ function define(tagName, componentObj, options = {}) {
 
   // Add the specified web component to the prototype chain.
   prototypeChain.push(componentObj);
+  prototypeChain = prototypeChain.flat(Infinity);
   const flattenedPrototype = deepmerge.all(prototypeChain);
 
   // TODO: Need to make sure lifecycleMethods are not here

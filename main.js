@@ -44,8 +44,16 @@ const tabbable = {
 
 const keyboardNavigable = {
   attrs: { tabindex: { type: Number, default: 0 } },
-  onkeypress(e) {
-    if (e.target === this && ["Enter", " "].includes(e.key)) this.click(e);
+  onMount() {
+    this.addEventListener("keypress", (e) => {
+      if (
+        e.target === this &&
+        !this.state.disabled &&
+        ["Enter", " "].includes(e.key)
+      ) {
+        this.click(e);
+      }
+    });
   },
 };
 
@@ -81,11 +89,13 @@ const Tab = {
 define("aha-tab", Tab, { mixins: [tabbable, keyboardNavigable] });
 
 const TabContent = {
-  styles: css`
-    :host(:not([active])) {
-      display: none;
-    }
-  `,
+  onMount() {
+    observe(() => {
+      const activeIsNotHost = this.tabs.state.activeTab !== this.state.tabIndex;
+      this.state.disabled = activeIsNotHost;
+      this.state.hidden = activeIsNotHost;
+    });
+  },
   render() {
     return html`<slot></slot>`;
   },
