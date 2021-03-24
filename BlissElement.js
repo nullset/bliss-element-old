@@ -218,6 +218,7 @@ function define(tagName, componentObj, options = {}) {
   }
 
   // Build up our web component's prototype.
+  // const props = Object.keys(flattenedPrototype.attrs);
   prototypeChain.forEach((proto) => {
     Object.entries(proto).forEach(([key, value]) => {
       if (typeof value === typeof Function) {
@@ -238,6 +239,21 @@ function define(tagName, componentObj, options = {}) {
         BlissElement.prototype[key] = value;
       }
     });
+  });
+
+  // Create getter/setter for any observed attribute, and make `state[prop] === this[prop]`.
+  Object.keys(flattenedPrototype.attrs).forEach((key) => {
+    if (flattenedPrototype.attrs[key] != null) {
+      Object.defineProperty(BlissElement.prototype, key, {
+        get() {
+          return this.state[key];
+        },
+        set(value) {
+          this.state[key] = value;
+          return value;
+        },
+      });
+    }
   });
 
   customElements.define(tagName, BlissElement, { extends: extend });

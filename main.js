@@ -31,17 +31,21 @@ const tabbable = {
   onMount() {
     this.tabs = this.getContext("aha-tabs");
     const nodes = Array.from(this.tabs.querySelectorAll(this.tagName));
-    this.state.tabIndex = nodes.findIndex((node) => node === this);
+    this.state.index = nodes.findIndex((node) => node === this);
 
-    if (this.state.active) this.tabs.state.activeTab = this.state.tabIndex;
-
+    // If this.active is true, then set tabs.state.activeTab to be this tab.
     observe(() => {
-      this.state.active = this.tabs.state.activeTab === this.state.tabIndex;
+      if (this.state.active) this.tabs.state.activeTab = this.state.index;
+    });
+
+    // If tabs.state.activeTab is this tab, then set this tab's active prop to true.
+    observe(() => {
+      this.state.active = this.tabs.state.activeTab === this.state.index;
     });
   },
 
   onUnmount() {
-    if (this.tabs.state.activeTab === this.state.tabIndex)
+    if (this.tabs.state.activeTab === this.state.index)
       this.tabs.state.activeTab = undefined;
   },
 };
@@ -86,7 +90,7 @@ const Tab = {
   },
   onclick(e) {
     if (!this.state.disabled) {
-      this.tabs.state.activeTab = this.state.tabIndex;
+      this.tabs.state.activeTab = this.state.index;
     }
   },
 };
@@ -95,7 +99,7 @@ define("aha-tab", Tab, { mixins: [tabbable, keyboardNavigable] });
 const TabContent = {
   onMount() {
     observe(() => {
-      const activeIsNotHost = this.tabs.state.activeTab !== this.state.tabIndex;
+      const activeIsNotHost = this.tabs.state.activeTab !== this.state.index;
       this.state.disabled = activeIsNotHost;
       this.state.hidden = activeIsNotHost;
     });
