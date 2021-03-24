@@ -6,7 +6,7 @@ const Tabs = {
       display: inline-flex;
     }
   `,
-  connectedCallback() {
+  onMount() {
     observe(() => {
       this.state.activeTab = this.state.activeTab ?? 0;
     });
@@ -25,10 +25,7 @@ const tabbable = {
     active: { type: Boolean },
   },
   onMount() {
-    debugger;
-  },
-  connectedCallback() {
-    this.tabs = this.ctxParent("aha-tabs");
+    this.tabs = this.getContext("aha-tabs2");
     const nodes = Array.from(this.tabs.querySelectorAll(this.tagName));
     this.state.tabIndex = nodes.findIndex((node) => node === this);
 
@@ -39,7 +36,7 @@ const tabbable = {
     });
   },
 
-  disconnectedCallback() {
+  onUnmount() {
     if (this.tabs.state.activeTab === this.state.tabIndex)
       this.tabs.state.activeTab = undefined;
   },
@@ -71,8 +68,8 @@ const Tab = {
   //   this.setAttribute("slot", "tabs");
   // },
 
-  // connectedCallback() {
-  //   this.tabs = this.ctxParent("aha-tabs");
+  // onMount() {
+  //   this.tabs = this.getContext("aha-tabs");
   //   const tabNodes = Array.from(this.tabs.querySelectorAll(this.tagName));
   //   this.state.tabIndex = tabNodes.findIndex((node) => node === this);
 
@@ -83,7 +80,8 @@ const Tab = {
   //   });
   // },
 
-  // disconnectedCallback() {
+  // onUnmount() {
+  //   debugger;
   //   if (this.tabs.state.activeTab === this.state.tabIndex)
   //     this.tabs.state.activeTab = undefined;
   // },
@@ -110,7 +108,7 @@ const TabContent = {
   `,
 
   // connectedCallback() {
-  //   this.tabs = this.ctxParent("aha-tabs");
+  //   this.tabs = this.getContext("aha-tabs");
   //   const tabNodes = Array.from(this.tabs.querySelectorAll(this.tagName));
   //   this.state.tabIndex = tabNodes.findIndex((node) => node === this);
 
@@ -155,10 +153,10 @@ const Foo = {
     this.value = e.path[0].value;
   },
   // hasShadowRoot: true,
-  connectedCallback() {
-    //   // super.connectedCallback();
-    console.log("FOO connectedCallback", this);
-  },
+  // connectedCallback() {
+  //   //   // super.connectedCallback();
+  //   console.log("FOO connectedCallback", this);
+  // },
   blah() {
     debugger;
   },
@@ -176,10 +174,13 @@ const Foo = {
 
 const Bar = {
   observedAttributes: [],
-  connectedCallback() {
-    //   // super.connectedCallback();
-    console.log("BAR connectedCallback", this);
-  },
+  // connectedCallback() {
+  //   //   // super.connectedCallback();
+  //   // console.warn("BAR connectedCallback", this);
+  // },
+  // onMount() {
+  //   console.warn("onMount in Bar", this);
+  // },
   blah() {
     debugger;
   },
@@ -191,7 +192,7 @@ const Bar = {
 define("foo-tag", Foo, { mixins: [Bar] });
 
 const Thing = {
-  connectedCallback() {},
+  onMount() {},
   render() {
     return html`<slot></slot>`;
   },

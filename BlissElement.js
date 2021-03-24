@@ -1,6 +1,5 @@
 import { observable, observe, raw } from "@nx-js/observer-util";
 import { render, html, svg } from "uhtml";
-import props from "element-props";
 import "construct-style-sheets-polyfill";
 import deepmerge from "deepmerge";
 
@@ -28,81 +27,30 @@ function constructStylesheets(prototypes) {
     .flat(Infinity);
 }
 
-const lifecycleMethods = {
-  onInit: true,
-  onMount: true,
-  onUnmount: true,
-  connectedCallback: true,
-  disconnectedCallback: true,
-  adoptedCallback: true,
-  attributeChangedCallback: true,
-};
-
-const eventRegex = new RegExp("^on([a-z])");
+const eventRegex = new RegExp("^on([a-z])", "i");
 function isAnEvent(name) {
   return eventRegex.test(name);
 }
 
-// const ctxTree = new Map();
-// Object.defineProperties(ctxTree, {
-//   foo: {
-//     value: () => {
-//       return this;
-//     },
-//   },
-//   parent: {
-//     value: (node) => {
-//       const nodeInfo = ctxTree.get(node);
-//       return ctxTree.get(nodeInfo.path[nodeInfo.path.length - 2]);
-//     },
-//   },
-//   ancestors: {
-//     value: (node) => {
-//       console.log(this);
-//       debugger;
-//       return ctxTree.get(node).slice(0, -1).reverse();
-//     },
-//   },
-
-//   descendants: {
-//     value: (node) => {
-//       const path = ctxTree.get(node);
-//       const length = path.length;
-//       return Array.from(ctxTree.entries())
-//         .reduce((acc, [key, value], i, arr) => {
-//           if (value.length <= length) return acc;
-//           const ctxPathSlice = value.slice(0, length);
-//           if (ctxPathSlice.every((ctx, idx, arr) => arr[idx] === path[idx])) {
-//             acc.push(key);
-//           }
-//           return acc;
-//         }, [])
-//         .sort((a, b) => {
-//           return ctxTree.get(a).size < ctxTree.get(b).size;
-//         });
-//     },
-//   },
-
-//   relatives: {
-//     value: (node) => {
-//       return [ctxTree.ancestors(node), ctxTree.descendants(node)].flat(
-//         Infinity
-//       );
-//     },
-//   },
-// });
+const lifecycleMethods = ["onInit", "onMount", "onUnmount", "onAdopted"];
 
 function define(tagName, componentObj, options = {}) {
   const { mixins = [], base = HTMLElement, extend = undefined } = options;
   const prototypeChain = Array.isArray(mixins) ? mixins : [mixins];
+
+  // Add a default mixin that creates observable attributes for `hidden` and `disabled`.
   prototypeChain.unshift({
     attrs: {
       hidden: { type: Boolean, default: false },
       disabled: { type: Boolean, default: false },
     },
   });
+
+  // Add the specified web component to the prototype chain.
   prototypeChain.push(componentObj);
   const flattenedPrototype = deepmerge.all(prototypeChain);
+
+  // TODO: Need to make sure lifecycleMethods are not here
   const preBoundEvents = Object.keys(flattenedPrototype).reduce((acc, key) => {
     if (isAnEvent(key)) acc.push(key.replace(eventRegex, "$1"));
     return acc;
@@ -121,6 +69,9 @@ function define(tagName, componentObj, options = {}) {
   const componentStylesheets = constructStylesheets(prototypeChain);
 
   class BlissElement extends base {
+    state = observable({});
+    isBlissElement = true;
+
     static get observedAttributes() {
       return observedAttrs;
     }
@@ -129,20 +80,59 @@ function define(tagName, componentObj, options = {}) {
       this["on" + e.type](e);
     }
 
-    state = observable({});
-
-    isBlissElement = true;
-
     constructor() {
       super();
+      this.bindEvents();
+      this.convertPropsToAttributes();
+      this.callLifecyleMethods("onInit");
+      this.renderToRoot();
+    }
 
+    connectedCallback() {
+      if (super.connectedCallback) super.connectedCallback();
+      this.callLifecyleMethods("onMount");
+    }
+
+    disconnectedCallback() {
+      if (super.disconnectedCallback) super.disconnectedCallback();
+      this.callLifecyleMethods("onUnmount");
+    }
+
+    adoptedCallback() {
+      if (super.adoptedCallback) super.adoptedCallback();
+      this.callLifecyleMethods("onAdopted");
+    }
+
+    // Update state when attributes change.
+    attributeChangedCallback(name, oldValue, newValue) {
+      if (super.attributeChangedCallback) super.attributeChangedCallback();
+
+      const propName = attributePropMap[name];
+      const { type = String } = flattenedPrototype.attrs[propName];
+      let convertedValue;
+
+      if (type === Boolean) {
+        convertedValue = [null, "false"].includes(newValue) ? false : true;
+      } else if (type === Number) {
+        convertedValue = Number(newValue);
+      } else {
+        try {
+          convertedValue = JSON.parse(newValue);
+        } catch (e) {
+          convertedValue = String(newValue);
+        }
+      }
+      this.state[propName] = convertedValue;
+    }
+
+    bindEvents() {
       preBoundEvents.forEach((event) => {
         this.addEventListener(event, this);
       });
+    }
 
-      // this.state = this.props = observable(props(this));
-
-      // Convert properties to strings and set on attributes.
+    // Convert properties to strings and set on attributes.
+    convertPropsToAttributes() {
       Object.entries(flattenedPrototype.attrs).forEach(([attr, value]) => {
         // Observe update state keys, and set attributes appropriately.
         observe(() => {
@@ -170,7 +160,9 @@ function define(tagName, componentObj, options = {}) {
         // Set inintial default values.
         this.state[attr] = flattenedPrototype.attrs[attr].default;
       });
+    }
 
+    renderToRoot() {
       let rootNode;
       if (this.hasShadowRoot == null) {
         rootNode = this.attachShadow({ mode: "open" });
@@ -180,64 +172,28 @@ function define(tagName, componentObj, options = {}) {
         // TODO: Attach stylesheets when component does not have shadow DOM.
       }
 
-      // Render component into root node.;
       observe(() => {
         render(rootNode, this.render());
       });
     }
 
-    ctxParent(matcher) {
+    callLifecyleMethods(method, args) {
+      if (this.constructor.prototype[method]) {
+        this.constructor.prototype[method].forEach((fn) => fn.call(this, args));
+      }
+    }
+
+    getContext(matcher) {
       let node = this;
       let ctx;
       while (!ctx && node.parentElement) {
         node = node.parentElement;
         if (node.isBlissElement && node.matches(matcher)) ctx = node;
       }
-      return node;
-    }
-
-    // ctx = ctxTree;
-
-    connectedCallback() {
-      if (super.connectedCallback) super.connectedCallback();
-      console.log("BLISS connectedCallback", this);
-
-      // // Must wait a tick because child elements can be attached before their parents.
-      // queueMicrotask(() => {
-      //   this.buildCtxAncestors();
-      // });
-    }
-
-    disconnectedCallback() {
-      if (super.disconnectedCallback) super.disconnectedCallback();
-
-      // return ctxTree.delete(this);
-    }
-
-    adoptedCallback() {
-      if (super.adoptedCallback) super.adoptedCallback();
-    }
-
-    // Update state when attributes change.
-    attributeChangedCallback(name, oldValue, newValue) {
-      if (super.attributeChangedCallback) super.attributeChangedCallback();
-
-      const propName = attributePropMap[name];
-      const { type = String } = flattenedPrototype.attrs[propName];
-      let convertedValue;
-
-      if (type === Boolean) {
-        convertedValue = [null, "false"].includes(newValue) ? false : true;
-      } else if (type === Number) {
-        convertedValue = Number(newValue);
-      } else {
-        try {
-          convertedValue = JSON.parse(newValue);
-        } catch (e) {
-          convertedValue = String(newValue);
-        }
-      }
-      this.state[propName] = convertedValue;
+      if (node && document.documentElement !== node) return node;
+      throw new Error(
+        `A context that matches "${matcher}" could not be found for <${this.tagName.toLowerCase()}>.`
+      );
     }
 
     render() {
@@ -245,41 +201,26 @@ function define(tagName, componentObj, options = {}) {
     }
   }
 
+  // Build up our web component's prototype.
   prototypeChain.forEach((proto) => {
     Object.entries(proto).forEach(([key, value]) => {
       if (typeof value === typeof Function) {
-        if (lifecycleMethods[value.name]) {
-          // If property is a lifecycleMethod, then call the original function and our new function. Behaves like `super.myMethod()`.
-          const originalFn = BlissElement.prototype[key];
-          BlissElement.prototype[key] = function (args) {
-            originalFn.call(this, args);
-            if (value.name === "connectedCallback") {
-              // Ensure ctx is set up before connectedCallback functions are run.
-              requestAnimationFrame(() => {
-                value.call(this, args);
-              });
-            } else {
-              value.call(this, args);
-            }
-          };
+        if (lifecycleMethods.includes(key)) {
+          if (!BlissElement.prototype[key]) BlissElement.prototype[key] = [];
+          BlissElement.prototype[key].push(value);
+        } else if (isAnEvent(key)) {
+          // Events are handled in a special way on HTMLElement. This is because HTMLElement is a function, not an object.
+          Object.defineProperty(BlissElement.prototype, key, {
+            value: value,
+            enumerable: true,
+            configurable: true,
+          });
         } else {
-          if (isAnEvent(key)) {
-            // Events are handled in a special way on HTMLElement. This is because HTMLElement is a function, not an object.
-            Object.defineProperty(BlissElement.prototype, key, {
-              value: value,
-              enumerable: true,
-              configurable: true,
-            });
-          } else {
-            BlissElement.prototype[key] = value;
-          }
+          BlissElement.prototype[key] = value;
         }
-        return;
+      } else {
+        BlissElement.prototype[key] = value;
       }
-
-      // If not a lifecycleMethod then overwrite existing property.
-
-      BlissElement.prototype[key] = value;
     });
   });
 
