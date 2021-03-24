@@ -108,7 +108,7 @@ this.state.email = 'dani@example.com';
 
 the second reaction would fire but not the first.
 
-## Context
+### Context
 
 TODO
 
