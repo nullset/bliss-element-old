@@ -85,8 +85,8 @@ A reaction based on the observed state will only fire if the part of state in qu
 
 ```
 this.state = {
-	name: 'Danielle',
-	email: 'danielle@example.com'
+  name: 'Danielle',
+  email: 'danielle@example.com'
 }
 ```
 
@@ -116,12 +116,12 @@ Because we render using tagged template literals, only the individual DOM nodes/
 
 ```
 render() {
-	return html`
-		<div id="root">
-			<div id="name">${this.state.name}</div>
-			<div id="email">${this.state.email}</div>
-		</div>
-	`
+  return html`
+    <div id="root">
+      <div id="name">${this.state.name}</div>
+      <div id="email">${this.state.email}</div>
+    </div>
+  `
 }
 ```
 
@@ -135,26 +135,26 @@ All web components are, at their core, a new class that extends HTMLElement (or 
 
 ```
 class Foo extends HTMLElement {
-	observedAttributes() {
-		return ['canDrag'];
-	}
-	onDrag() {
-		... do stuff
-	}
-	doBadStuff() {
+  observedAttributes() {
+    return ['canDrag'];
+  }
+  onDrag() {
+    ... do stuff
+  }
+  doBadStuff() {
 
-	}
-	... some other capabilities/behaviors ...
+  }
+  ... some other capabilities/behaviors ...
 }
 
 class Bar extends Foo {
-	observedAttributes() {
-		return ['canDrag', 'announce'];
-	}
-	flashOnDragEnd() {
-		... do stuff
-	}
-	... inherits `onDrag`, `doBadStuff`, and all the other capabilities/behaviors of Foo
+  observedAttributes() {
+    return ['canDrag', 'announce'];
+  }
+  flashOnDragEnd() {
+    ... do stuff
+  }
+  ... inherits `onDrag`, `doBadStuff`, and all the other capabilities/behaviors of Foo
 }
 ```
 
@@ -170,46 +170,46 @@ For example:
 
 ```
 const draggable = {
-	attrs: {
-		canDrag: { type: Boolean }
-	},
-	onDrag() {
-		... do stuff
-	},
-	onMount() {
-		... do stuff
-	}
-	logOnDragStart() {
-		console.log('Draggable logOnDragStart');
-	}
+  attrs: {
+    canDrag: { type: Boolean }
+  },
+  onDrag() {
+    ... do stuff
+  },
+  onMount() {
+    ... do stuff
+  }
+  logOnDragStart() {
+    console.log('Draggable logOnDragStart');
+  }
 }
 
 const Foo = define('example-foo',
-	{
-		doBadStuff() {
-			... do stuff
-		}
-	},
-	{mixins: [draggable, someOtherMixin]}
+  {
+    doBadStuff() {
+      ... do stuff
+    }
+  },
+  {mixins: [draggable, someOtherMixin]}
 );
 
 const Bar = define('example-bar',
-	{
-		attrs: {
-			announce: { type: Boolean }
-		},
-		onMount() {
-			... do stuff
-		},
-		flashOnDragEnd() {
-			... do stuff
-		},
-		logOnDragStart() {
-			console.log('Bar logOnDragStart');
-		}
+  {
+    attrs: {
+      announce: { type: Boolean }
+    },
+    onMount() {
+      ... do stuff
+    },
+    flashOnDragEnd() {
+      ... do stuff
+    },
+    logOnDragStart() {
+      console.log('Bar logOnDragStart');
+    }
 
-	},
-	{mixins: draggable}
+  },
+  {mixins: draggable}
 );
 
 ```
@@ -223,10 +223,10 @@ In Bliss web components, any object can be composed with any other object. There
 - Any lifecycle method is additive. In the example above, this means that Bar will fire draggable's onMount method _and_ its own onMount method when the component appears on the page.
 - `attrs` are mixed together. In the example above, this means that Bar will ultimately have `attrs` that look like:
   ```
-  	attrs: {
-  		canDrag: { type: Boolean },
-  		announce: { type: Boolean }
-  	}
+    attrs: {
+      canDrag: { type: Boolean },
+      announce: { type: Boolean }
+    }
   ```
   If our component defines the same `attr` key as an earlier mixin, our component's `attr` key will override the earlier mixin's.
 - All other methods, variables, etc. will be overwritten by composition. In the example above, this means that if we have a web component based on Bar and we call Bar's `logOnDragStart` method, we will see a log message of "Bar logOnDragStart" rather than "Draggable logOnDragStart".
@@ -251,12 +251,12 @@ Any event can be defined directly on our Bliss web component just by prefacing i
 
 ```
 const Bar = define('example-bar',
-	{
-		onclick(event) {
-			... do stuff
-		}
+  {
+    onclick(event) {
+      ... do stuff
+    }
 
-	}
+  }
 );
 ```
 
@@ -264,12 +264,12 @@ rather than the usual:
 
 ```
 class Bar extends Foo {
-	constructor() {
-		super();
-		this.addEventListener('click', (event) => {
-			... do stuff
-		});
-	}
+  constructor() {
+    super();
+    this.addEventListener('click', (event) => {
+      ... do stuff
+    });
+  }
 }
 ```
 
@@ -277,14 +277,14 @@ or
 
 ```
 class Bar extends Foo {
-	constructor() {
-		super();
-		this.handleClick = this.handleClick.bind(this);
-		this.addEventListener('click', this.handleClick);
-	}
-	handleClick(event) {
-		... do stuff
-	}
+  constructor() {
+    super();
+    this.handleClick = this.handleClick.bind(this);
+    this.addEventListener('click', this.handleClick);
+  }
+  handleClick(event) {
+    ... do stuff
+  }
 }
 ```
 
@@ -299,7 +299,7 @@ class Bar extends Foo {
     ```
     const myElem = document.querySelector('example-foo');
     myElem.onclick = (event) => {
-    	... my new behavior
+      ... my new behavior
     }
     ```
 - We can remove an event entirely if we don't want it.
