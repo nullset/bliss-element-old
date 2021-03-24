@@ -4,6 +4,42 @@
 
 Pull down the repository, switch to the directory, `npm install` everything (or better yet, use `pnpm install`), and then `npm run dev`. Open a browser to `localhost:5033`.
 
+Making a web component is easy:
+
+```
+// --- In javascript
+
+import { html, css, define, observe } from "./BlissElement";
+
+const Hello = {
+  attrs: { name: { type: String, default: "Danielle" } },
+  styles: css`
+    :host {
+      color: red;
+    }
+  `,
+  onMount() {
+    observe(() => {
+      console.log(`Name has been changed to: ${this.state.name}`);
+    })
+  },
+  render() {
+    return html`
+      <h1>
+        Hello ${this.state.name}!
+        <slot>How are you today?</slot>
+      </h1>
+    `;
+  },
+};
+define("bliss-hello", Hello);
+
+
+// --- In HTML
+<bliss-hello name="Frank">How are you tonight?</bliss-hello>
+
+```
+
 ## Why another web component library?
 
 Because sane defaults, coupled with observable state, coupled with composable behaviors is powerful.
