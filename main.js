@@ -45,7 +45,7 @@ const tabbable = {
 const keyboardNavigable = {
   attrs: { tabindex: { type: Number, default: 0 } },
   onkeypress(e) {
-    if (["Enter", " "].includes(e.key)) this.click(e);
+    if (e.target === this && ["Enter", " "].includes(e.key)) this.click(e);
   },
 };
 
