@@ -48,22 +48,23 @@ const lifecycleMethods = ["onInit", "onMount", "onUnmount", "onAdopted"];
 
 function define(tagName, componentObj, options = {}) {
   const { mixins = [], base = HTMLElement, extend = undefined } = options;
-  let prototypeChain = [mixins];
 
   // Add a default mixin that creates observable attributes for `hidden` and `disabled`.
-  prototypeChain.unshift({
-    attrs: {
-      hidden: { type: Boolean, default: false },
-      disabled: { type: Boolean, default: false },
+  let prototypeChain = [
+    {
+      attrs: {
+        hidden: { type: Boolean, default: false },
+        disabled: { type: Boolean, default: false },
+      },
     },
-  });
+    mixins,
+  ];
 
   // Add the specified web component to the prototype chain.
   prototypeChain.push(componentObj);
   prototypeChain = prototypeChain.flat(Infinity);
   const flattenedPrototype = deepmerge.all(prototypeChain);
 
-  // TODO: Need to make sure lifecycleMethods are not here
   const preBoundEvents = Object.keys(flattenedPrototype).reduce((acc, key) => {
     if (isAnEvent(key) && !lifecycleMethods.includes(key)) {
       acc.push(key.replace(eventRegex, "$1"));
