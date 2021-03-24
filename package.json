@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite --port 5033",
-    "build": "vite build",
+    "build": "vite build --sourcemap=true",
     "serve": "vite preview"
   },
   "devDependencies": {
