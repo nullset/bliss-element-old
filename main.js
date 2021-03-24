@@ -13,8 +13,12 @@ const Tabs = {
   },
   render() {
     return html`
-      <nav><slot name="tabs"></slot></nav>
-      <div><slot></slot></div>
+      <nav part="tabs">
+        <slot name="tabs"></slot>
+      </nav>
+      <div part="content">
+        <slot></slot>
+      </div>
     `;
   },
 };
