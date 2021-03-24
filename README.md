@@ -108,6 +108,10 @@ this.state.email = 'dani@example.com';
 
 the second reaction would fire but not the first.
 
+## Context
+
+TODO
+
 ### Rendering
 
 The `render` function of a Bliss web component utilizes `observe`. If any referenced value inside the `render` function changes the render function will automatically be called.
