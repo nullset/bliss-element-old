@@ -8,13 +8,15 @@ function css(string) {
 }
 
 const defaultStyles = css`
-  :host,
+  :host {
+    box-sizing: border-box;
+  }
   :host:before,
   :host:after,
   :host *,
   :host *:before,
   :host *:after {
-    box-sizing: border-box;
+    box-sizing: inherit;
   }
 `;
 
