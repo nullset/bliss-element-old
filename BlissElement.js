@@ -180,7 +180,7 @@ function define(tagName, componentObj, options = {}) {
 
     renderToRoot() {
       let rootNode;
-      if (this.hasShadowRoot == null) {
+      if (this.shadow !== false) {
         rootNode = this.attachShadow({ mode: "open" });
         rootNode.adoptedStyleSheets = componentStylesheets;
       } else {

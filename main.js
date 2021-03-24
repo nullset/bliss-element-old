@@ -108,7 +108,7 @@ define("aha-tab-content", TabContent, { mixins: tabbable });
 
 //----------------------------------------------------------------
 const Foo = {
-  observedAttributes: [],
+  attrs: { foo: { type: String } },
   styles: [
     css`
       h1 {
@@ -149,6 +149,7 @@ const Foo = {
 };
 
 const Bar = {
+  shadow: false,
   observedAttributes: [],
   // connectedCallback() {
   //   //   // super.connectedCallback();
@@ -165,7 +166,7 @@ const Bar = {
     debugger;
   },
 };
-define("foo-tag", Foo, { mixins: [Bar] });
+define("aha-foo", Foo, { mixins: [Bar] });
 
 const Thing = {
   onMount() {},
