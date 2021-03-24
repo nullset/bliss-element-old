@@ -7,12 +7,24 @@ function css(string) {
   return string;
 }
 
+const defaultStyles = css`
+  :host,
+  :host:before,
+  :host:after,
+  :host *,
+  :host *:before,
+  :host *:after {
+    box-sizing: border-box;
+  }
+`;
+
 function constructStylesheets(prototypes) {
   return prototypes
     .slice(0)
     .reduce((acc, { styles }) => {
       if (!styles) return acc;
-      const rules = (Array.isArray(styles) ? styles : [styles])
+      const rules = [defaultStyles, styles]
+        .flat(Infinity)
         .map((s) => {
           return s.toString();
         })
@@ -36,7 +48,7 @@ const lifecycleMethods = ["onInit", "onMount", "onUnmount", "onAdopted"];
 
 function define(tagName, componentObj, options = {}) {
   const { mixins = [], base = HTMLElement, extend = undefined } = options;
-  const prototypeChain = Array.isArray(mixins) ? mixins : [mixins];
+  const prototypeChain = [mixins].flat(Infinity);
 
   // Add a default mixin that creates observable attributes for `hidden` and `disabled`.
   prototypeChain.unshift({
