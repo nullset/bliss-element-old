@@ -42,6 +42,13 @@ const tabbable = {
   },
 };
 
+const keyboardNavigable = {
+  attrs: { tabindex: { type: Number, default: 0 } },
+  onkeypress(e) {
+    if (["Enter", " "].includes(e.key)) this.click(e);
+  },
+};
+
 const Tab = {
   attrs: {
     slot: { default: "tabs" },
@@ -63,15 +70,15 @@ const Tab = {
     }
   `,
   render() {
-    return html`<slot></slot> `;
+    return html`<slot></slot>`;
   },
   onclick(e) {
-    if (!e.currentTarget.state.disabled) {
-      this.tabs.state.activeTab = e.currentTarget.state.tabIndex;
+    if (!this.state.disabled) {
+      this.tabs.state.activeTab = this.state.tabIndex;
     }
   },
 };
-define("aha-tab", Tab, { mixins: tabbable });
+define("aha-tab", Tab, { mixins: [tabbable, keyboardNavigable] });
 
 const TabContent = {
   styles: css`
