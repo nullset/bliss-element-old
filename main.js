@@ -1,5 +1,6 @@
 import { html, css, define, observe, raw } from "./BlissElement";
 
+//
 const Tabs = {
   styles: css`
     :host nav {
@@ -22,14 +23,14 @@ const Tabs = {
     `;
   },
 };
-define("aha-tabs", Tabs);
+define("bliss-tabs", Tabs);
 
 const tabbable = {
   attrs: {
     active: { type: Boolean },
   },
   onMount() {
-    this.tabs = this.getParentContext("aha-tabs");
+    this.tabs = this.getParentContext("bliss-tabs");
     const nodes = Array.from(this.tabs.querySelectorAll(this.tagName));
     this.state.index = nodes.findIndex((node) => node === this);
 
@@ -94,7 +95,7 @@ const Tab = {
     }
   },
 };
-define("aha-tab", Tab, { mixins: [tabbable, keyboardNavigable] });
+define("bliss-tab", Tab, { mixins: [tabbable, keyboardNavigable] });
 
 const TabContent = {
   onMount() {
@@ -106,7 +107,7 @@ const TabContent = {
     return html`<slot></slot>`;
   },
 };
-define("aha-tab-content", TabContent, { mixins: tabbable });
+define("bliss-tab-content", TabContent, { mixins: tabbable });
 
 // ----------------------------------------------------------------
 
