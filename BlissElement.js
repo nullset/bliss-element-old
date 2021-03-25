@@ -209,17 +209,17 @@ function define(tagName, componentObj, options = {}) {
     }
 
     renderToRoot() {
-      let rootNode;
+      this.rootNode;
       if (this.shadow !== false) {
-        rootNode = this.attachShadow({ mode: "open" });
-        rootNode.adoptedStyleSheets = componentStylesheets;
+        this.rootNode = this.attachShadow({ mode: "open" });
+        this.rootNode.adoptedStyleSheets = componentStylesheets;
       } else {
-        rootNode = this;
+        this.rootNode = this;
         // TODO: Attach stylesheets when component does not have shadow DOM.
       }
 
       observe(() => {
-        render(rootNode, this.render());
+        render(this.rootNode, this.render());
       });
     }
 
@@ -248,7 +248,7 @@ function define(tagName, componentObj, options = {}) {
     }
 
     getGlobalContext(matcher) {
-      const ctx = globalContext.find((node) => {
+      const ctx = Array.from(globalContext).find((node) => {
         return node === matcher || node.matches(matcher);
       });
       if (ctx) return ctx;

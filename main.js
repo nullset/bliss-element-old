@@ -1,6 +1,5 @@
 import { html, css, define, observe, raw } from "./BlissElement";
 
-//
 const Tabs = {
   styles: css`
     :host nav {
@@ -113,22 +112,30 @@ define("bliss-tab-content", TabContent, { mixins: tabbable });
 
 const ActiveTabBadge = {
   attrs: { ref: { type: String } },
-  onInit() {
-    debugger;
-    // this.tabs = this.getGlobalContext(this.tabsRef);
+
+  onMount() {
+    this.tabs = this.getGlobalContext(this.ref);
+
+    observe(() => {
+      this.state.number = this.tabs.state.activeTab;
+    });
   },
   styles: css`
     :host {
       display: inline-flex;
+      justify-content: center;
+      align-items: center;
       height: 20px;
       width: 20px;
       border-radius: 50%;
       background: lime;
-      color: white;
     }
   `,
   render() {
-    return html``;
+    // We observe this.state rather than this.tabs.state because there is no guarantee what order web components will be loaded in
+    // and so we have no idea at initial render if this.tabs is a valid reference or if it currently has a `state` set.
+    // Observing a local variable that references a different element is much safer, as we're always guaranteed to have a value.
+    return html`<div>${this.state.number}</div>`;
   },
 };
 define("active-tab-badge", ActiveTabBadge);
