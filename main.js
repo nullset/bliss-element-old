@@ -111,13 +111,13 @@ define("bliss-tab-content", TabContent, { mixins: tabbable });
 // ----------------------------------------------------------------
 
 const ActiveTabBadge = {
-  attrs: { ref: { type: String } },
+  attrs: { ref: { type: Array } },
 
   onMount() {
-    this.tabs = this.getGlobalContext(this.ref);
+    const tabs = this.getGlobalContext(this.ref);
 
     observe(() => {
-      this.state.number = this.tabs.state.activeTab;
+      this.state.number = tabs.state.activeTab;
     });
   },
   styles: css`
@@ -134,7 +134,7 @@ const ActiveTabBadge = {
   render() {
     // We observe this.state rather than this.tabs.state because there is no guarantee what order web components will be loaded in
     // and so we have no idea at initial render if this.tabs is a valid reference or if it currently has a `state` set.
-    // Observing a local variable that references a different element is much safer, as we're always guaranteed to have a value.
+    // Observing a local variable that references a different element is much safer, as the property path will always resolve.
     return html`<div>${this.state.number}</div>`;
   },
 };

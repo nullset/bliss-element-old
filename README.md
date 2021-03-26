@@ -385,3 +385,24 @@ Nothing is preventing you from defining your components using good ole' `addEven
 - No larger community ... if we can't figure out a problem, no one will
 - Not well tested at this point
   - Only manual tests so far. I wrote it in 3 evenings, cut me some slack :P
+
+### TO DOCUMENT
+
+#### Listening to another component's context
+
+// We observe this.state rather than this.tabs.state because there is no guarantee what order web components will be loaded in
+// and so we have no idea at initial render if this.tabs is a valid reference or if it currently has a `state` set.
+// Observing a local variable that references a different element is much safer, as the property path will always resolve.
+
+```
+  onMount() {
+    const tabs = this.getGlobalContext(this.ref);
+
+    observe(() => {
+      this.state.number = tabs.state.activeTab;
+    });
+  },
+  render() {
+    return html`<div>${this.state.number}</div>`;
+  },
+```
