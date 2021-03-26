@@ -192,7 +192,9 @@ function define(tagName, componentObj, options = {}) {
       const type = flattenedPrototype.attrs[propName]?.type || String;
       let convertedValue;
 
-      if (type === Boolean) {
+      if (type === String) {
+        return newValue;
+      } else if (type === Boolean) {
         convertedValue = [null, "false"].includes(newValue) ? false : true;
       } else if (type === Number) {
         convertedValue = Number(newValue);
