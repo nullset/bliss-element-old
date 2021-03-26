@@ -111,44 +111,42 @@ function define(tagName, componentObj, options = {}) {
       this.renderToRoot();
     }
 
+    fireEvent(eventName, detail = {}) {
+      const event = new CustomEvent(
+        `${this.tagName.toLowerCase()}:${eventName}`,
+        {
+          detail: Object.assign(detail, { element: this }),
+        }
+      );
+      this.dispatchEvent(event);
+      document.dispatchEvent(event);
+    }
+
     connectedCallback() {
       if (super.connectedCallback) super.connectedCallback();
       globalContext.add(this, true);
       this.callLifecyleMethods("onMount");
+      this.fireEvent("onMount");
     }
 
     disconnectedCallback() {
       if (super.disconnectedCallback) super.disconnectedCallback();
       globalContext.delete(this);
       this.callLifecyleMethods("onUnmount");
+      this.fireEvent("onUnmount");
     }
 
     adoptedCallback() {
       if (super.adoptedCallback) super.adoptedCallback();
+      globalContext.add(this, true);
       this.callLifecyleMethods("onAdopted");
+      this.fireEvent("onAdopted");
     }
 
     // Update state when attributes change.
     attributeChangedCallback(name, oldValue, newValue) {
       if (super.attributeChangedCallback) super.attributeChangedCallback();
       this.convertAttributeToProp(name, newValue);
-
-      // const propName = attributePropMap[name];
-      // const { type = String } = flattenedPrototype.attrs[propName];
-      // let convertedValue;
-
-      // if (type === Boolean) {
-      //   convertedValue = [null, "false"].includes(newValue) ? false : true;
-      // } else if (type === Number) {
-      //   convertedValue = Number(newValue);
-      // } else {
-      //   try {
-      //     convertedValue = JSON.parse(newValue);
-      //   } catch (e) {
-      //     convertedValue = String(newValue);
-      //   }
-      // }
-      // this[propName] = convertedValue;
     }
 
     bindEvents() {
