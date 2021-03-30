@@ -48,6 +48,9 @@ function isAnEvent(name) {
 
 const lifecycleMethods = ["onInit", "onMount", "onUnmount", "onAdopted"];
 
+const globalContext = new Set();
+window.globalContext = globalContext;
+
 function define(tagName, componentObj, options = {}) {
   const { mixins = [], base = HTMLElement, extend = undefined } = options;
 
@@ -106,19 +109,36 @@ function define(tagName, componentObj, options = {}) {
       this.renderToRoot();
     }
 
+    fireEvent(eventName, detail = {}) {
+      const event = new CustomEvent(
+        `${this.tagName.toLowerCase()}:${eventName}`,
+        {
+          detail: Object.assign(detail, { element: this }),
+        }
+      );
+      this.dispatchEvent(event);
+      document.dispatchEvent(event);
+    }
+
     connectedCallback() {
       if (super.connectedCallback) super.connectedCallback();
+      globalContext.add(this, true);
       this.callLifecyleMethods("onMount");
+      this.fireEvent("onMount");
     }
 
     disconnectedCallback() {
       if (super.disconnectedCallback) super.disconnectedCallback();
       this.callLifecyleMethods("onUnmount");
+      globalContext.delete(this);
+      this.fireEvent("onUnmount");
     }
 
     adoptedCallback() {
       if (super.adoptedCallback) super.adoptedCallback();
+      globalContext.add(this, true);
       this.callLifecyleMethods("onAdopted");
+      this.fireEvent("onAdopted");
     }
 
     // Update state when attributes change.
