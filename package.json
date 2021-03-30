@@ -13,8 +13,6 @@
     "@nx-js/observer-util": "^4.2.2",
     "construct-style-sheets-polyfill": "^2.4.16",
     "deepmerge": "^4.2.2",
-    "haunted": "^4.7.1",
-    "uce": "^1.15.0",
     "uhtml": "^2.6.0"
   }
 }
