@@ -103,12 +103,14 @@ function define(tagName, componentObj, options = {}) {
       this.bindEvents();
       this.convertPropsToAttributes();
       this.callLifecyleMethods("onInit");
-      this.renderToRoot();
+      this.renderer = this.renderToRoot();
+      this.renderer.next();
     }
 
     connectedCallback() {
       if (super.connectedCallback) super.connectedCallback();
       this.callLifecyleMethods("onMount");
+      // this.renderer.next();
     }
 
     disconnectedCallback() {
@@ -181,7 +183,7 @@ function define(tagName, componentObj, options = {}) {
       });
     }
 
-    renderToRoot() {
+    *renderToRoot() {
       let rootNode;
       if (this.shadow !== false) {
         rootNode = this.attachShadow({ mode: "open" });
@@ -190,6 +192,8 @@ function define(tagName, componentObj, options = {}) {
         rootNode = this;
         // TODO: Attach stylesheets when component does not have shadow DOM.
       }
+
+      yield;
 
       observe(() => {
         render(rootNode, this.render());
