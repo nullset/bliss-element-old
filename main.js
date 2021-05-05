@@ -15,10 +15,10 @@ const Tabs = {
   render() {
     return html`
       <nav part="tabs">
-        <slot name="tabs"></slot>
+        <slot name="bliss-tab"></slot>
       </nav>
       <div part="content">
-        <slot></slot>
+        <slot name="bliss-tab-content"> </slot>
       </div>
     `;
   },
@@ -67,9 +67,6 @@ const keyboardNavigable = {
 };
 
 const Tab = {
-  attrs: {
-    slot: { default: "tabs" },
-  },
   styles: css`
     :host {
       border-bottom: 2px solid transparent;

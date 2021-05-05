@@ -104,7 +104,7 @@ function define(tagName, componentObj, options = {}) {
     constructor() {
       super();
       this.bindEvents();
-      this.slot = this.getAttribute("slot") || this.tagName.toLowerCase();
+      this.slot = this.getAttribute("slot") ?? this.tagName.toLowerCase();
       this.convertPropsToAttributes();
       this.callLifecyleMethods("onInit");
       this.renderToRoot();
