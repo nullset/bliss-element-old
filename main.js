@@ -18,7 +18,7 @@ const Tabs = {
         <slot name="bliss-tab"></slot>
       </nav>
       <div part="content">
-        <slot name="bliss-tab-content"> </slot>
+        <slot name="bliss-tab-content"></slot>
       </div>
     `;
   },
