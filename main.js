@@ -1,6 +1,5 @@
 import { html, css, define, observe, raw } from "./BlissElement";
 
-//
 const Tabs = {
   styles: css`
     :host nav {
@@ -107,3 +106,13 @@ const TabContent = {
   },
 };
 define("bliss-tab-content", TabContent, { mixins: tabbable });
+
+const AlertButton = {
+  onclick() {
+    alert("You have been alerted");
+  },
+};
+define("bliss-alert-button", AlertButton, {
+  base: HTMLButtonElement,
+  extend: "button",
+});

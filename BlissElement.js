@@ -3,6 +3,31 @@ import { render, html, svg } from "uhtml";
 import deepmerge from "deepmerge";
 import "construct-style-sheets-polyfill";
 
+// List of shadowDOM-able native elements from https://javascript.info/shadow-dom
+const nativeShadowDOMable = [
+  "ARTICLE",
+  "ASIDE",
+  "BLOCKQUOTE",
+  "BODY",
+  "DIV",
+  "FOOTER",
+  "H1",
+  "H2",
+  "H3",
+  "H4",
+  "H5",
+  "H6",
+  "HEADER",
+  "MAIN",
+  "NAV",
+  "P",
+  "SECTION",
+  "SPAN",
+].reduce((acc, tag) => {
+  acc[tag] = true;
+  return acc;
+}, {});
+
 function css(string) {
   return string;
 }
@@ -103,8 +128,17 @@ function define(tagName, componentObj, options = {}) {
 
     constructor() {
       super();
+
+      // Do not render to shadow root if we are extending a native element and the element is not shadowDOM-able.
+      if (!/-/.test(this.tagName) && !nativeShadowDOMable[this.tagName])
+        this.shadow = false;
+
+      // Set implicit slot name.
+      this.slot =
+        this.getAttribute("is") ||
+        (this.getAttribute("slot") ?? this.tagName.toLowerCase());
+
       this.bindEvents();
-      this.slot = this.getAttribute("slot") ?? this.tagName.toLowerCase();
       this.convertPropsToAttributes();
       this.callLifecyleMethods("onInit");
       this.renderToRoot();
@@ -203,15 +237,10 @@ function define(tagName, componentObj, options = {}) {
     }
 
     renderToRoot() {
-      let rootNode;
-      if (this.shadow !== false) {
-        rootNode = this.attachShadow({ mode: "open" });
-        rootNode.adoptedStyleSheets = componentStylesheets;
-      } else {
-        rootNode = this;
-        // TODO: Attach stylesheets when component does not have shadow DOM.
-      }
+      if (this.shadow === false) return;
 
+      let rootNode = this.attachShadow({ mode: "open" });
+      rootNode.adoptedStyleSheets = componentStylesheets;
       observe(() => {
         render(rootNode, this.render());
       });
@@ -234,10 +263,6 @@ function define(tagName, componentObj, options = {}) {
       throw new Error(
         `A context that matches "${matcher}" could not be found for <${this.tagName.toLowerCase()}>.`
       );
-    }
-
-    render() {
-      return html``;
     }
   }
 
