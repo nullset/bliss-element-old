@@ -1,7 +1,10 @@
 import { observable, observe, raw } from "@nx-js/observer-util";
 import { render, html, svg } from "uhtml";
 import deepmerge from "deepmerge";
-import "construct-style-sheets-polyfill";
+
+// Polyfills
+import "construct-style-sheets-polyfill"; // Non-Chromium
+import "@ungap/custom-elements"; // Safari
 
 // List of shadowDOM-able native elements from https://javascript.info/shadow-dom
 const nativeShadowDOMable = [
